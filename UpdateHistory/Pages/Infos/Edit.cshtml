@@ -1,0 +1,124 @@
+﻿@page
+@model UpdateHistory.Pages.Infos.EditModel
+
+@{
+    ViewData["Title"] = "Edit";
+}
+
+<br>
+<br>
+<br>
+<h2>Edit</h2>
+
+<h4>@Model.Info.Title</h4>
+<hr />
+<div class="row">
+    <div class="col-md-4">
+        <form method="post">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <input type="hidden" asp-for="Info.ID" />
+            <div class="form-group">
+                <label class="control-label">TestResults</label>
+                <select id="selTestResults" asp-for="Info.TestResults" class="form-control">
+                    <option id="succeed" value="Succeeded">Succeeded</option>
+                    <option id="fail" value="Failed">Failed</option>
+                </select>
+                <span asp-validation-for="Info.TestResults" class="text-danger"></span>
+            </div>
+            <div class="form-group" >
+                <label asp-for="Info.TestDate" class="control-label"></label>
+                <input id="testdate" asp-for="DateEdit" class="form-control" name="dateedit" />
+                <span asp-validation-for="Info.TestDate" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Info.Reason" class="control-label"></label>
+                <textarea id="reason" asp-for="Info.Reason" class="form-control" placeholder="Enter the reason for the change..."></textarea>
+                <span asp-validation-for="Info.Reason" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <input type="submit" id="btnEditSave" value="Save" class="btn btn-default" />
+            </div>
+            <div>
+                <a href="@Model.InfosPage" id="linkInfoEditBack">Back to List</a>
+            </div>
+            <div class="form-group" style="visibility: hidden">
+                <label asp-for="Info.Active" class="control-label"></label>
+                <input asp-for="Info.Active" class="form-control" />
+                <span asp-validation-for="Info.Active" class="text-danger"></span>
+            </div>
+            <div class="form-group" style="visibility: hidden">
+                <label asp-for="Info.KBID" class="control-label"></label>
+                <input asp-for="Info.KBID" class="form-control" />
+                <span asp-validation-for="Info.KBID" class="text-danger"></span>
+            </div>
+            <div class="form-group" style="visibility: hidden">
+                <label asp-for="Info.MSRCSeverity" class="control-label"></label>
+                <input asp-for="Info.MSRCSeverity" class="form-control" />
+                <span asp-validation-for="Info.MSRCSeverity" class="text-danger"></span>
+            </div>
+            <div class="form-group" style="visibility: hidden">
+                <label asp-for="Info.LastReleased" class="control-label"></label>
+                <input asp-for="Info.LastReleased" class="form-control" />
+                <span asp-validation-for="Info.LastReleased" class="text-danger"></span>
+            </div>
+            <div class="form-group" style="visibility: hidden">
+                <label asp-for="Info.MSRCNumber" class="control-label"></label>
+                <input asp-for="Info.MSRCNumber" class="form-control" />
+                <span asp-validation-for="Info.MSRCNumber" class="text-danger"></span>
+            </div>
+            <div class="form-group" style="visibility: hidden">
+                <label asp-for="Info.SupportedLanguages" class="control-label"></label>
+                <input asp-for="Info.SupportedLanguages" class="form-control" />
+                <span asp-validation-for="Info.SupportedLanguages" class="text-danger"></span>
+            </div>
+            <div class="form-group" style="visibility: hidden">
+                <label asp-for="Info.SupportedProducts" class="control-label"></label>
+                <input asp-for="Info.SupportedProducts" class="form-control" />
+                <span asp-validation-for="Info.SupportedProducts" class="text-danger"></span>
+            </div>
+            <div class="form-group" style="visibility: hidden">
+                <label asp-for="Info.Architecture" class="control-label"></label>
+                <input asp-for="Info.Architecture" class="form-control" />
+                <span asp-validation-for="Info.Architecture" class="text-danger"></span>
+            </div>
+            <div class="form-group" style="visibility: hidden">
+                <label asp-for="Info.Classification" class="control-label"></label>
+                <input asp-for="Info.Classification" class="form-control" />
+                <span asp-validation-for="Info.Classification" class="text-danger"></span>
+            </div>
+            <div class="form-group" style="visibility: hidden">
+                <label asp-for="Info.Title" class="control-label"></label>
+                <input asp-for="Info.Title" class="form-control" />
+                <span asp-validation-for="Info.Title" class="text-danger"></span>
+            </div>
+            <div class="form-group" style="visibility: hidden">
+                <label asp-for="Info.updateID" class="control-label"></label>
+                <input asp-for="Info.updateID" class="form-control" />
+                <span asp-validation-for="Info.updateID" class="text-danger"></span>
+            </div>
+            <div class="form-group" style="visibility: hidden">
+                <label asp-for="Info.UpdateStatus" class="control-label"></label>
+                <input asp-for="Info.UpdateStatus" class="form-control" />
+                <span asp-validation-for="Info.UpdateStatus" class="text-danger"></span>
+            </div>
+            <div class="form-group" style="visibility: hidden">
+                <label asp-for="Info.ICW" class="control-label"></label>
+                <input asp-for="Info.ICW" class="form-control" />
+                <span asp-validation-for="Info.ICW" class="text-danger"></span>
+            </div>
+            <div class="form-group" style="visibility: hidden">
+                <label asp-for="Info.Server" class="control-label"></label>
+                <input asp-for="Info.Server" class="form-control" />
+                <span asp-validation-for="Info.Server" class="text-danger"></span>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div>
+    <a asp-page="./Index">Back to List</a>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

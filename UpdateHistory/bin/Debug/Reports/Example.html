@@ -1,0 +1,4483 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Index - WuApp</title>
+
+    
+        <link rel="stylesheet" href="/lib/bootstrap/dist/css/bootstrap.css" />
+        <link rel="stylesheet" href="/css/site.css" />
+    
+    
+
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/jquery/latest/jquery.min.js"></script>
+    <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.11.1/jquery-ui.min.js"></script>
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/momentjs/latest/moment.min.js"></script>
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.min.js"></script>
+    <script type="text/javascript" src="https://cdn.datatables.net/1.10.19/js/jquery.dataTables.min.js"></script>
+    <script type="text/javascript" src="https://cdn.datatables.net/select/1.2.7/js/dataTables.select.min.js"></script>
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.css" />
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.19/css/jquery.dataTables.min.css" />
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/select/1.2.7/css/select.dataTables.min.css" />
+    <link rel="stylesheet" type="text/css" href="/css/semantic.css" />
+
+
+
+    <script>
+        function updateDataTableSelectAllCtrl(table) {
+            var $table = table.table().node();
+            var $chkbox_all = $('tbody input[type="checkbox"]', $table);
+            var $chkbox_checked = $('tbody input[type="checkbox"]:checked', $table);
+            var chkbox_select_all = $('thead input[name="select_all"]', $table).get(0);
+
+            // If none of the checkboxes are checked
+            if ($chkbox_checked.length === 0) {
+                chkbox_select_all.checked = false;
+                if ('indeterminate' in chkbox_select_all) {
+                    chkbox_select_all.indeterminate = false;
+                }
+
+                // If all of the checkboxes are checked
+            } else if ($chkbox_checked.length === $chkbox_all.length) {
+                chkbox_select_all.checked = true;
+                if ('indeterminate' in chkbox_select_all) {
+                    chkbox_select_all.indeterminate = false;
+                }
+
+                // If some of the checkboxes are checked
+            } else {
+                chkbox_select_all.checked = true;
+                if ('indeterminate' in chkbox_select_all) {
+                    chkbox_select_all.indeterminate = true;
+                }
+            }
+        }
+
+        $(document).ready(function () {
+            // Array holding selected row IDs
+            var rows_selected = [];
+            var table = $('#example').DataTable({
+                'ajax': 'https://api.myjson.com/bins/1us28',
+                'columnDefs': [{
+                    'targets': 0,
+                    'searchable': false,
+                    'orderable': false,
+                    'width': '1%',
+                    'className': 'dt-body-center',
+                    'render': function (data, type, full, meta) {
+                        return '<input type="checkbox">';
+                    }
+                }],
+                'order': [1, 'asc'],
+                'rowCallback': function (row, data, dataIndex) {
+                    // Get row ID
+                    var rowId = data[0];
+
+                    // If row ID is in the list of selected row IDs
+                    if ($.inArray(rowId, rows_selected) !== -1) {
+                        $(row).find('input[type="checkbox"]').prop('checked', true);
+                        $(row).addClass('selected');
+                    }
+                }
+            });
+
+            // Handle click on checkbox
+            $('#example tbody').on('click', 'input[type="checkbox"]', function (e) {
+                var $row = $(this).closest('tr');
+
+                // Get row data
+                var data = table.row($row).data();
+
+                // Get row ID
+                var rowId = data[0];
+
+                // Determine whether row ID is in the list of selected row IDs
+                var index = $.inArray(rowId, rows_selected);
+
+                // If checkbox is checked and row ID is not in list of selected row IDs
+                if (this.checked && index === -1) {
+                    rows_selected.push(rowId);
+
+                    // Otherwise, if checkbox is not checked and row ID is in list of selected row IDs
+                } else if (!this.checked && index !== -1) {
+                    rows_selected.splice(index, 1);
+                }
+
+                if (this.checked) {
+                    $row.addClass('selected');
+                } else {
+                    $row.removeClass('selected');
+                }
+
+                // Update state of "Select all" control
+                updateDataTableSelectAllCtrl(table);
+
+                // Prevent click event from propagating to parent
+                e.stopPropagation();
+            });
+
+            // Handle click on table cells with checkboxes
+            $('#example').on('click', 'tbody td, thead th:first-child', function (e) {
+                $(this).parent().find('input[type="checkbox"]').trigger('click');
+            });
+
+            // Handle click on "Select all" control
+            $('thead input[name="select_all"]', table.table().container()).on('click', function (e) {
+                if (this.checked) {
+                    $('#example tbody input[type="checkbox"]:not(:checked)').trigger('click');
+                } else {
+                    $('#example tbody input[type="checkbox"]:checked').trigger('click');
+                }
+
+                // Prevent click event from propagating to parent
+                e.stopPropagation();
+            });
+
+            // Handle table draw event
+            table.on('draw', function () {
+                // Update state of "Select all" control
+                updateDataTableSelectAllCtrl(table);
+            });
+
+            // Handle form submission event
+            $('#frm-example').on('submit', function (e) {
+                var form = this;
+
+                // Iterate over all selected checkboxes
+                $.each(rows_selected, function (index, rowId) {
+                    // Create a hidden element
+                    $(form).append(
+                        $('<input>')
+                            .attr('type', 'hidden')
+                            .attr('name', 'id[]')
+                            .val(rowId)
+                    );
+                });
+
+                // FOR DEMONSTRATION ONLY
+
+                // Output form data to a console
+                $('#example-console').text($(form).serialize());
+                console.log("Form submission", $(form).serialize());
+
+                // Remove added elements
+                $('input[name="id\[\]"]', form).remove();
+
+                // Prevent actual form submission
+                e.preventDefault();
+            });
+        });
+    </script>
+
+    <script>
+        $(function () {
+
+            $('input[name="datefilter"]').daterangepicker({
+                autoUpdateInput: false,
+                locale: {
+                    cancelLabel: 'Clear'
+                }
+            });
+
+            $('input[name="datefilter"]').on('apply.daterangepicker', function (ev, picker) {
+                $(this).val(picker.startDate.format('MM/DD/YYYY') + ' - ' + picker.endDate.format('MM/DD/YYYY'));
+            });
+
+            $('input[name="datefilter"]').on('cancel.daterangepicker', function (ev, picker) {
+                $(this).val('');
+            });
+
+        });
+
+    </script>
+
+    <script>
+        /* When the user clicks on the button,
+        toggle between hiding and showing the dropdown content */
+        function myFunction() {
+            document.getElementById("myDropdown").classList.toggle("show");
+        }
+
+        // Close the dropdown menu if the user clicks outside of it
+        window.onclick = function (event) {
+            if (!event.target.matches('.dropbtn')) {
+                var dropdowns = document.getElementsByClassName("dropdown-content");
+                var i;
+                for (i = 0; i < dropdowns.length; i++) {
+                    var openDropdown = dropdowns[i];
+                    if (openDropdown.classList.contains('show')) {
+                        openDropdown.classList.remove('show');
+                    }
+                }
+            }
+        }
+    </script>
+
+
+</head>
+<body>
+    <nav class="navbar navbar-inverse navbar-fixed-top">
+        <div class="container">
+            <div class="navbar-header">
+                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+                    <span class="sr-only">Toggle navigation</span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+                <a class="navbar-brand" href="/">WuApp</a>
+            </div>
+            <div class="navbar-collapse collapse">
+                <ul class="nav navbar-nav">
+                    <li><a href="/Servers">Servers</a></li>
+                    <li><a href="/Infos">View Reports</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    
+
+    <nav id="cookieConsent" class="navbar navbar-default navbar-fixed-top" role="alert">
+        <div class="container">
+            <div class="navbar-header">
+                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#cookieConsent .navbar-collapse">
+                    <span class="sr-only">Toggle cookie consent banner</span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+                <span class="navbar-brand"><span class="glyphicon glyphicon-info-sign" aria-hidden="true"></span></span>
+            </div>
+            <div class="collapse navbar-collapse">
+                <p class="navbar-text">
+                    Use this space to summarize your privacy and cookie use policy.
+                </p>
+                <div class="navbar-right">
+                    <a class="btn btn-info navbar-btn" href="/Privacy">Learn More</a>
+                    <button type="button" class="btn btn-default navbar-btn" data-cookie-string=".AspNet.Consent=yes; expires=Sat, 22 Feb 2020 19:03:51 GMT; path=/; secure; samesite=lax">Accept</button>
+                </div>
+            </div>
+        </div>
+    </nav>
+    <script>
+        (function () {
+            document.querySelector("#cookieConsent button[data-cookie-string]").addEventListener("click", function (el) {
+                document.cookie = el.target.dataset.cookieString;
+                document.querySelector("#cookieConsent").classList.add("hidden");
+            }, false);
+        })();
+    </script>
+
+
+    <div class="container body-content">
+        
+
+
+<link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.css" />
+<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.19/css/jquery.dataTables.min.css" />
+<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/select/1.2.7/css/select.dataTables.min.css" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/semantic-ui@2.4.2/dist/semantic.min.css">
+
+
+<style>
+
+    .tabset > input[type="radio"] {
+        position: absolute;
+        left: -200vw;
+    }
+
+    .tabset .tab-panel {
+        display: none;
+    }
+
+    .tabset > input:first-child:checked ~ .tab-panels > .tab-panel:first-child,
+    .tabset > input:nth-child(3):checked ~ .tab-panels > .tab-panel:nth-child(2),
+    .tabset > input:nth-child(5):checked ~ .tab-panels > .tab-panel:nth-child(3),
+    .tabset > input:nth-child(7):checked ~ .tab-panels > .tab-panel:nth-child(4),
+    .tabset > input:nth-child(9):checked ~ .tab-panels > .tab-panel:nth-child(5),
+    .tabset > input:nth-child(11):checked ~ .tab-panels > .tab-panel:nth-child(6) {
+        display: block;
+    }
+
+    /*
+     Styling
+    */
+
+    .tabset > label {
+        position: relative;
+        display: inline-block;
+        padding: 5px 15px 15px;
+        border: 1px solid transparent;
+        border-bottom: 0;
+        cursor: pointer;
+        font-weight: 600;
+    }
+
+        .tabset > label::after {
+            content: "";
+            position: absolute;
+            left: 15px;
+            bottom: 5px;
+            width: 22px;
+            height: 4px;
+            background: #8d8d8d;
+        }
+
+        .tabset > label:hover,
+        .tabset > input:focus + label {
+            color: #06c;
+        }
+
+            .tabset > label:hover::after,
+            .tabset > input:focus + label::after,
+            .tabset > input:checked + label::after {
+                background: #06c;
+            }
+
+    .tabset > input:checked + label {
+        border-color: #ccc;
+        border-bottom: 1px solid #fff;
+        margin-bottom: -1px;
+    }
+
+    .tab-panel {
+        padding: 10px 0;
+        border-top: 5px solid #ccc;
+    }
+
+    .form-style-2 {
+        max-width: 100%;
+        padding: 20px 12px 10px 20px;
+        font: 13px Arial, Helvetica, sans-serif;
+    }
+
+    .form-style-2-heading {
+        font-weight: bold;
+        font-style: italic;
+        border-bottom: 2px solid #ddd;
+        margin-bottom: 20px;
+        font-size: 15px;
+        padding-bottom: 3px;
+    }
+
+    .form-style-2 label {
+        display: block;
+        margin: 0px 0px 15px 0px;
+    }
+
+        .form-style-2 label > span {
+            width: 100px;
+            font-weight: bold;
+            float: left;
+            padding-top: 8px;
+            padding-right: 5px;
+        }
+
+    .form-style-2 span.required {
+        color: red;
+    }
+
+    .form-style-2 .tel-number-field {
+        width: 40px;
+        text-align: center;
+    }
+
+    .form-style-2 input.input-field, .form-style-2 .select-field {
+        width: 48%;
+    }
+
+    .form-style-2 input.input-field,
+    .form-style-2 .tel-number-field,
+    .form-style-2 .textarea-field,
+    .form-style-2 .select-field {
+        box-sizing: border-box;
+        -webkit-box-sizing: border-box;
+        -moz-box-sizing: border-box;
+        border: 1px solid #C2C2C2;
+        box-shadow: 1px 1px 4px #EBEBEB;
+        -moz-box-shadow: 1px 1px 4px #EBEBEB;
+        -webkit-box-shadow: 1px 1px 4px #EBEBEB;
+        border-radius: 3px;
+        -webkit-border-radius: 3px;
+        -moz-border-radius: 3px;
+        padding: 7px;
+        outline: none;
+    }
+
+        .form-style-2 .input-field:focus,
+        .form-style-2 .tel-number-field:focus,
+        .form-style-2 .textarea-field:focus,
+        .form-style-2 .select-field:focus {
+            border: 1px solid #848484;
+        }
+
+    .form-style-2 .textarea-field {
+        height: 100px;
+        width: 55%;
+    }
+
+    .form-style-2 input[type=submit],
+    .form-style-2 input[type=reset],
+    .form-style-2 input[type=button] {
+        border: none;
+        padding: 8px 15px 8px 15px;
+        background: #0069af;
+        color: #fff;
+        box-shadow: 1px 1px 4px #DADADA;
+        -moz-box-shadow: 1px 1px 4px #DADADA;
+        -webkit-box-shadow: 1px 1px 4px #DADADA;
+        border-radius: 3px;
+        -webkit-border-radius: 3px;
+        -moz-border-radius: 3px;
+    }
+
+        .form-style-2 input[type=submit]:hover,
+        .form-style-2 input[type=reset]:hover,
+        .form-style-2 input[type=button]:hover {
+            background: #00558e;
+            color: #fff;
+        }
+
+    .formstyle input[type=submit],
+    .formstyle input[type=reset],
+    .formstyle input[type=button] {
+        border: none;
+        padding: 8px 15px 8px 15px;
+        background: #0069af;
+        color: #fff;
+        box-shadow: 1px 1px 4px #DADADA;
+        -moz-box-shadow: 1px 1px 4px #DADADA;
+        -webkit-box-shadow: 1px 1px 4px #DADADA;
+        border-radius: 3px;
+        -webkit-border-radius: 3px;
+        -moz-border-radius: 3px;
+    }
+
+        .formstyle input[type=submit]:hover,
+        .formstyle input[type=reset]:hover,
+        .formstyle input[type=button]:hover {
+            background: #00558e;
+            color: #fff;
+        }
+
+    .sub-entry {
+        width: 50%;
+        float: left;
+    }
+
+    .button {
+        text-align: center;
+        padding-top: 20px;
+        clear: both;
+    }
+
+    .dropdown-check-list {
+        display: inline-block;
+    }
+
+        .dropdown-check-list .anchor {
+            position: relative;
+            cursor: pointer;
+            display: inline-block;
+            padding: 5px 50px 5px 10px;
+            border: 1px solid #ccc;
+        }
+
+            .dropdown-check-list .anchor:after {
+                position: absolute;
+                content: "";
+                border-left: 2px solid black;
+                border-top: 2px solid black;
+                padding: 5px;
+                right: 10px;
+                top: 20%;
+                -moz-transform: rotate(-135deg);
+                -ms-transform: rotate(-135deg);
+                -o-transform: rotate(-135deg);
+                -webkit-transform: rotate(-135deg);
+                transform: rotate(-135deg);
+            }
+
+            .dropdown-check-list .anchor:active:after {
+                right: 8px;
+                top: 21%;
+            }
+
+        .dropdown-check-list ul.items {
+            padding: 2px;
+            display: none;
+            margin: 0;
+            border: 1px solid #ccc;
+            border-top: none;
+        }
+
+            .dropdown-check-list ul.items li {
+                list-style: none;
+            }
+
+        .dropdown-check-list.visible .anchor {
+            color: #0094ff;
+        }
+
+        .dropdown-check-list.visible .items {
+            display: block;
+        }
+</style>
+
+
+<br>
+<br>
+<br>
+
+
+<h1>Windows Update History</h1>
+
+
+<form method="post">
+    <div class="formstyle">
+        <label><input type="submit" value="Submit" class="button" /></label>
+    </div>
+<input name="__RequestVerificationToken" type="hidden" value="CfDJ8Eb97nADx2JPh5HkdwE31U_TshA3B3WcAgolO4dEoitOkEApz_b7xdVnEplBuxi14P9nimmWOp3mTKjbtNwtFniYDGkq7hpucBU57T2MOioxtfp3E63QsLn5Gw6gbE7drIvkMBSJr489mElwMDXeSF4" /></form>
+
+
+<div>
+    <div class="form-style-2-heading">Filter your results</div>
+    <form action="">
+        <div class="form-style-2">
+            <div class="sub-entry">
+                <label for="field1">
+                    <span>Test Results</span><select class="select-field" id="SelectedResult" name="SelectedResult">
+                        <option value="">All</option>
+                    <option>Failed</option>
+<option>Succeeded</option>
+</select>
+                </label>
+                <label for="Active">
+                    <span>Active:</span><select class="select-field" id="SelectedActive" name="SelectedActive">
+                        <option value="">All</option>
+                    <option>No</option>
+<option>Yes</option>
+</select>
+                </label>
+                <label for="KBID"><span>KBID:</span><input class="input-field" type="text" placeholder="" id="SearchKBID" name="SearchKBID" value="" /></label>
+            </div>
+            <div class="sub-entry">
+                <label for="ICW"><span>ICW:</span><input class="input-field" type="text" placeholder="" id="SearchICW" name="SearchICW" value="" /></label>
+                <label for="Server">
+                    <span>Server:</span><select class="select-field" id="SelectedServer" name="SelectedServer">
+                        <option value="">All</option>
+                    <option>Mine</option>
+<option>QTrain</option>
+</select>
+                </label>
+                <label for="Date">
+                    <span>Date:</span>
+                    <input class="input-field" type="text" name="datefilter" id="datefilter" value="" />
+                </label>
+            </div>
+        </div>
+        <div class="formstyle">
+            <label><input type="submit" value="Submit" class="button" /></label>
+            <label><input type="reset" value="Clear" class="button" /></label>
+        </div>
+    </form>
+</div>
+
+
+
+<br>
+<br>
+
+
+
+<div class="tabset">
+    <!-- Tab 1 -->
+    <input type="radio" name="tabset" id="tab1" aria-controls="Active" checked>
+    <label for="tab1">Active</label>
+    <!-- Tab 2 -->
+    <input type="radio" name="tabset" id="tab2" aria-controls="Failed">
+    <label for="tab2">Failed</label>
+    <!-- Tab 3 -->
+    <input type="radio" name="tabset" id="tab3" aria-controls="All">
+    <label for="tab3">All</label>
+
+    <div class="tab-panels">
+        <section id="All" class="tab-panel">
+
+            <!-- Table 1 -->
+            <!-- Table 3 -->
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>
+                            Active
+                        </th>
+                        <th>
+                            KBID
+                        </th>
+                        <th>
+                            MSRCSeverity
+                        </th>
+                        <th>
+                            Classification
+                        </th>
+                        <th>
+                            Title
+                        </th>
+                        <th>
+                            ICW
+                        </th>
+                        <th>
+                            Server
+                        </th>
+                        <th>
+                            UpdateStatus
+                        </th>
+                        <th>
+                            TestResults
+                        </th>
+                        <th>
+                            Test Date
+                        </th>
+
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                        <tr>
+                            <td>
+                                <img src="images/green.png" alt="example" width="13" height="13" />
+                            </td>
+                            <td>
+                                4486458
+                            </td>
+                            <td>
+                                Critical
+                            </td>
+                            <td>
+                                Security Updates
+                            </td>
+                            <td>
+                                2019-01 Servicing Stack Update for Windows 10 Version 1703 for x64-based Systems (KB4486458)
+                            </td>
+                            <td>
+                                smt1.2
+                            </td>
+                            <td>
+                                Mine
+                            </td>
+                            <td>
+                                Succeeded
+                            </td>
+                            <td>
+                                Failed
+                            </td>
+                            <td>
+                                1/30/2019
+                            </td>
+
+                            <td>
+                                <a href="/Infos/Edit?id=36072">Edit</a>
+                                <a href="/Infos/Details?id=36072">Details</a>
+                                <a href="/Infos/Delete?id=36072">Delete</a>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <img src="images/green.png" alt="example" width="13" height="13" />
+                            </td>
+                            <td>
+                                4486458
+                            </td>
+                            <td>
+                                Critical
+                            </td>
+                            <td>
+                                Security Updates
+                            </td>
+                            <td>
+                                2019-01 Servicing Stack Update for Windows 10 Version 1703 for x64-based Systems (KB4486458)
+                            </td>
+                            <td>
+                                smt1.2
+                            </td>
+                            <td>
+                                Mine
+                            </td>
+                            <td>
+                                Succeeded
+                            </td>
+                            <td>
+                                Succeeded
+                            </td>
+                            <td>
+                                1/23/2019
+                            </td>
+
+                            <td>
+                                <a href="/Infos/Edit?id=36085">Edit</a>
+                                <a href="/Infos/Details?id=36085">Details</a>
+                                <a href="/Infos/Delete?id=36085">Delete</a>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <img src="images/green.png" alt="example" width="13" height="13" />
+                            </td>
+                            <td>
+                                4486458
+                            </td>
+                            <td>
+                                Critical
+                            </td>
+                            <td>
+                                Security Updates
+                            </td>
+                            <td>
+                                2019-01 Servicing Stack Update for Windows 10 Version 1703 for x64-based Systems (KB4486458)
+                            </td>
+                            <td>
+                                smt1.2
+                            </td>
+                            <td>
+                                Mine
+                            </td>
+                            <td>
+                                Succeeded
+                            </td>
+                            <td>
+                                Succeeded
+                            </td>
+                            <td>
+                                1/23/2019
+                            </td>
+
+                            <td>
+                                <a href="/Infos/Edit?id=36097">Edit</a>
+                                <a href="/Infos/Details?id=36097">Details</a>
+                                <a href="/Infos/Delete?id=36097">Delete</a>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <img src="images/green.png" alt="example" width="13" height="13" />
+                            </td>
+                            <td>
+                                4486458
+                            </td>
+                            <td>
+                                Critical
+                            </td>
+                            <td>
+                                Security Updates
+                            </td>
+                            <td>
+                                2019-01 Servicing Stack Update for Windows 10 Version 1703 for x64-based Systems (KB4486458)
+                            </td>
+                            <td>
+                                smt1.2
+                            </td>
+                            <td>
+                                Mine
+                            </td>
+                            <td>
+                                Succeeded
+                            </td>
+                            <td>
+                                Succeeded
+                            </td>
+                            <td>
+                                1/23/2019
+                            </td>
+
+                            <td>
+                                <a href="/Infos/Edit?id=36109">Edit</a>
+                                <a href="/Infos/Details?id=36109">Details</a>
+                                <a href="/Infos/Delete?id=36109">Delete</a>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <img src="images/green.png" alt="example" width="13" height="13" />
+                            </td>
+                            <td>
+                                890830
+                            </td>
+                            <td>
+                                Unspecified
+                            </td>
+                            <td>
+                                Update Rollups
+                            </td>
+                            <td>
+                                Windows Malicious Software Removal Tool x64 - January 2019 (KB890830)
+                            </td>
+                            <td>
+                                smt1.2
+                            </td>
+                            <td>
+                                Mine
+                            </td>
+                            <td>
+                                Succeeded
+                            </td>
+                            <td>
+                                Succeeded
+                            </td>
+                            <td>
+                                1/23/2019
+                            </td>
+
+                            <td>
+                                <a href="/Infos/Edit?id=36073">Edit</a>
+                                <a href="/Infos/Details?id=36073">Details</a>
+                                <a href="/Infos/Delete?id=36073">Delete</a>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <img src="images/green.png" alt="example" width="13" height="13" />
+                            </td>
+                            <td>
+                                890830
+                            </td>
+                            <td>
+                                Unspecified
+                            </td>
+                            <td>
+                                Update Rollups
+                            </td>
+                            <td>
+                                Windows Malicious Software Removal Tool x64 - January 2019 (KB890830)
+                            </td>
+                            <td>
+                                smt1.2
+                            </td>
+                            <td>
+                                Mine
+                            </td>
+                            <td>
+                                Succeeded
+                            </td>
+                            <td>
+                                Succeeded
+                            </td>
+                            <td>
+                                1/23/2019
+                            </td>
+
+                            <td>
+                                <a href="/Infos/Edit?id=36086">Edit</a>
+                                <a href="/Infos/Details?id=36086">Details</a>
+                                <a href="/Infos/Delete?id=36086">Delete</a>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <img src="images/green.png" alt="example" width="13" height="13" />
+                            </td>
+                            <td>
+                                890830
+                            </td>
+                            <td>
+                                Unspecified
+                            </td>
+                            <td>
+                                Update Rollups
+                            </td>
+                            <td>
+                                Windows Malicious Software Removal Tool x64 - January 2019 (KB890830)
+                            </td>
+                            <td>
+                                smt1.2
+                            </td>
+                            <td>
+                                Mine
+                            </td>
+                            <td>
+                                Succeeded
+                            </td>
+                            <td>
+                                Succeeded
+                            </td>
+                            <td>
+                                1/23/2019
+                            </td>
+
+                            <td>
+                                <a href="/Infos/Edit?id=36098">Edit</a>
+                                <a href="/Infos/Details?id=36098">Details</a>
+                                <a href="/Infos/Delete?id=36098">Delete</a>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <img src="images/green.png" alt="example" width="13" height="13" />
+                            </td>
+                            <td>
+                                890830
+                            </td>
+                            <td>
+                                Unspecified
+                            </td>
+                            <td>
+                                Update Rollups
+                            </td>
+                            <td>
+                                Windows Malicious Software Removal Tool x64 - January 2019 (KB890830)
+                            </td>
+                            <td>
+                                smt1.2
+                            </td>
+                            <td>
+                                Mine
+                            </td>
+                            <td>
+                                Succeeded
+                            </td>
+                            <td>
+                                Succeeded
+                            </td>
+                            <td>
+                                1/23/2019
+                            </td>
+
+                            <td>
+                                <a href="/Infos/Edit?id=36110">Edit</a>
+                                <a href="/Infos/Details?id=36110">Details</a>
+                                <a href="/Infos/Delete?id=36110">Delete</a>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <img src="images/green.png" alt="example" width="13" height="13" />
+                            </td>
+                            <td>
+                                4480973
+                            </td>
+                            <td>
+                                Critical
+                            </td>
+                            <td>
+                                Security Updates
+                            </td>
+                            <td>
+                                2019-01 Cumulative Update for Windows 10 Version 1703 for x64-based Systems (KB4480973)
+                            </td>
+                            <td>
+                                smt1.2
+                            </td>
+                            <td>
+                                Mine
+                            </td>
+                            <td>
+                                Succeeded
+                            </td>
+                            <td>
+                                Succeeded
+                            </td>
+                            <td>
+                                1/23/2019
+                            </td>
+
+                            <td>
+                                <a href="/Infos/Edit?id=36074">Edit</a>
+                                <a href="/Infos/Details?id=36074">Details</a>
+                                <a href="/Infos/Delete?id=36074">Delete</a>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <img src="images/green.png" alt="example" width="13" height="13" />
+                            </td>
+                            <td>
+                                4480973
+                            </td>
+                            <td>
+                                Critical
+                            </td>
+                            <td>
+                                Security Updates
+                            </td>
+                            <td>
+                                2019-01 Cumulative Update for Windows 10 Version 1703 for x64-based Systems (KB4480973)
+                            </td>
+                            <td>
+                                smt1.2
+                            </td>
+                            <td>
+                                Mine
+                            </td>
+                            <td>
+                                Succeeded
+                            </td>
+                            <td>
+                                Succeeded
+                            </td>
+                            <td>
+                                1/23/2019
+                            </td>
+
+                            <td>
+                                <a href="/Infos/Edit?id=36087">Edit</a>
+                                <a href="/Infos/Details?id=36087">Details</a>
+                                <a href="/Infos/Delete?id=36087">Delete</a>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <img src="images/green.png" alt="example" width="13" height="13" />
+                            </td>
+                            <td>
+                                4480973
+                            </td>
+                            <td>
+                                Critical
+                            </td>
+                            <td>
+                                Security Updates
+                            </td>
+                            <td>
+                                2019-01 Cumulative Update for Windows 10 Version 1703 for x64-based Systems (KB4480973)
+                            </td>
+                            <td>
+                                smt1.2
+                            </td>
+                            <td>
+                                Mine
+                            </td>
+                            <td>
+                                Succeeded
+                            </td>
+                            <td>
+                                Succeeded
+                            </td>
+                            <td>
+                                1/23/2019
+                            </td>
+
+                            <td>
+                                <a href="/Infos/Edit?id=36099">Edit</a>
+                                <a href="/Infos/Details?id=36099">Details</a>
+                                <a href="/Infos/Delete?id=36099">Delete</a>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <img src="images/green.png" alt="example" width="13" height="13" />
+                            </td>
+                            <td>
+                                4480973
+                            </td>
+                            <td>
+                                Critical
+                            </td>
+                            <td>
+                                Security Updates
+                            </td>
+                            <td>
+                                2019-01 Cumulative Update for Windows 10 Version 1703 for x64-based Systems (KB4480973)
+                            </td>
+                            <td>
+                                smt1.2
+                            </td>
+                            <td>
+                                Mine
+                            </td>
+                            <td>
+                                Succeeded
+                            </td>
+                            <td>
+                                Succeeded
+                            </td>
+                            <td>
+                                1/23/2019
+                            </td>
+
+                            <td>
+                                <a href="/Infos/Edit?id=36111">Edit</a>
+                                <a href="/Infos/Details?id=36111">Details</a>
+                                <a href="/Infos/Delete?id=36111">Delete</a>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <img src="images/green.png" alt="example" width="13" height="13" />
+                            </td>
+                            <td>
+                                4480979
+                            </td>
+                            <td>
+                                Critical
+                            </td>
+                            <td>
+                                Security Updates
+                            </td>
+                            <td>
+                                2019-01 Security Update for Adobe Flash Player for Windows 10 Version 1703 for x64-based Systems (KB4480979)
+                            </td>
+                            <td>
+                                smt1.2
+                            </td>
+                            <td>
+                                Mine
+                            </td>
+                            <td>
+                                Succeeded
+                            </td>
+                            <td>
+                                Succeeded
+                            </td>
+                            <td>
+                                1/23/2019
+                            </td>
+
+                            <td>
+                                <a href="/Infos/Edit?id=36075">Edit</a>
+                                <a href="/Infos/Details?id=36075">Details</a>
+                                <a href="/Infos/Delete?id=36075">Delete</a>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <img src="images/green.png" alt="example" width="13" height="13" />
+                            </td>
+                            <td>
+                                4480979
+                            </td>
+                            <td>
+                                Critical
+                            </td>
+                            <td>
+                                Security Updates
+                            </td>
+                            <td>
+                                2019-01 Security Update for Adobe Flash Player for Windows 10 Version 1703 for x64-based Systems (KB4480979)
+                            </td>
+                            <td>
+                                smt1.2
+                            </td>
+                            <td>
+                                Mine
+                            </td>
+                            <td>
+                                Succeeded
+                            </td>
+                            <td>
+                                Succeeded
+                            </td>
+                            <td>
+                                1/23/2019
+                            </td>
+
+                            <td>
+                                <a href="/Infos/Edit?id=36088">Edit</a>
+                                <a href="/Infos/Details?id=36088">Details</a>
+                                <a href="/Infos/Delete?id=36088">Delete</a>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <img src="images/green.png" alt="example" width="13" height="13" />
+                            </td>
+                            <td>
+                                4480979
+                            </td>
+                            <td>
+                                Critical
+                            </td>
+                            <td>
+                                Security Updates
+                            </td>
+                            <td>
+                                2019-01 Security Update for Adobe Flash Player for Windows 10 Version 1703 for x64-based Systems (KB4480979)
+                            </td>
+                            <td>
+                                smt1.2
+                            </td>
+                            <td>
+                                Mine
+                            </td>
+                            <td>
+                                Succeeded
+                            </td>
+                            <td>
+                                Succeeded
+                            </td>
+                            <td>
+                                1/23/2019
+                            </td>
+
+                            <td>
+                                <a href="/Infos/Edit?id=36100">Edit</a>
+                                <a href="/Infos/Details?id=36100">Details</a>
+                                <a href="/Infos/Delete?id=36100">Delete</a>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <img src="images/green.png" alt="example" width="13" height="13" />
+                            </td>
+                            <td>
+                                4480979
+                            </td>
+                            <td>
+                                Critical
+                            </td>
+                            <td>
+                                Security Updates
+                            </td>
+                            <td>
+                                2019-01 Security Update for Adobe Flash Player for Windows 10 Version 1703 for x64-based Systems (KB4480979)
+                            </td>
+                            <td>
+                                smt1.2
+                            </td>
+                            <td>
+                                Mine
+                            </td>
+                            <td>
+                                Succeeded
+                            </td>
+                            <td>
+                                Succeeded
+                            </td>
+                            <td>
+                                1/23/2019
+                            </td>
+
+                            <td>
+                                <a href="/Infos/Edit?id=36112">Edit</a>
+                                <a href="/Infos/Details?id=36112">Details</a>
+                                <a href="/Infos/Delete?id=36112">Delete</a>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <img src="images/green.png" alt="example" width="13" height="13" />
+                            </td>
+                            <td>
+                                4091663
+                            </td>
+                            <td>
+                                Unspecified
+                            </td>
+                            <td>
+                                Updates
+                            </td>
+                            <td>
+                                2018-10 Update for Windows 10 Version 1703 for x64-based Systems (KB4091663)
+                            </td>
+                            <td>
+                                smt1.2
+                            </td>
+                            <td>
+                                Mine
+                            </td>
+                            <td>
+                                Succeeded
+                            </td>
+                            <td>
+                                Succeeded
+                            </td>
+                            <td>
+                                1/23/2019
+                            </td>
+
+                            <td>
+                                <a href="/Infos/Edit?id=36076">Edit</a>
+                                <a href="/Infos/Details?id=36076">Details</a>
+                                <a href="/Infos/Delete?id=36076">Delete</a>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <img src="images/green.png" alt="example" width="13" height="13" />
+                            </td>
+                            <td>
+                                4091663
+                            </td>
+                            <td>
+                                Unspecified
+                            </td>
+                            <td>
+                                Updates
+                            </td>
+                            <td>
+                                2018-10 Update for Windows 10 Version 1703 for x64-based Systems (KB4091663)
+                            </td>
+                            <td>
+                                smt1.2
+                            </td>
+                            <td>
+                                Mine
+                            </td>
+                            <td>
+                                Succeeded
+                            </td>
+                            <td>
+                                Succeeded
+                            </td>
+                            <td>
+                                1/23/2019
+                            </td>
+
+                            <td>
+                                <a href="/Infos/Edit?id=36089">Edit</a>
+                                <a href="/Infos/Details?id=36089">Details</a>
+                                <a href="/Infos/Delete?id=36089">Delete</a>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <img src="images/green.png" alt="example" width="13" height="13" />
+                            </td>
+                            <td>
+                                4091663
+                            </td>
+                            <td>
+                                Unspecified
+                            </td>
+                            <td>
+                                Updates
+                            </td>
+                            <td>
+                                2018-10 Update for Windows 10 Version 1703 for x64-based Systems (KB4091663)
+                            </td>
+                            <td>
+                                smt1.2
+                            </td>
+                            <td>
+                                Mine
+                            </td>
+                            <td>
+                                Succeeded
+                            </td>
+                            <td>
+                                Succeeded
+                            </td>
+                            <td>
+                                1/23/2019
+                            </td>
+
+                            <td>
+                                <a href="/Infos/Edit?id=36101">Edit</a>
+                                <a href="/Infos/Details?id=36101">Details</a>
+                                <a href="/Infos/Delete?id=36101">Delete</a>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <img src="images/green.png" alt="example" width="13" height="13" />
+                            </td>
+                            <td>
+                                4091663
+                            </td>
+                            <td>
+                                Unspecified
+                            </td>
+                            <td>
+                                Updates
+                            </td>
+                            <td>
+                                2018-10 Update for Windows 10 Version 1703 for x64-based Systems (KB4091663)
+                            </td>
+                            <td>
+                                smt1.2
+                            </td>
+                            <td>
+                                Mine
+                            </td>
+                            <td>
+                                Succeeded
+                            </td>
+                            <td>
+                                Succeeded
+                            </td>
+                            <td>
+                                1/23/2019
+                            </td>
+
+                            <td>
+                                <a href="/Infos/Edit?id=36113">Edit</a>
+                                <a href="/Infos/Details?id=36113">Details</a>
+                                <a href="/Infos/Delete?id=36113">Delete</a>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <img src="images/green.png" alt="example" width="13" height="13" />
+                            </td>
+                            <td>
+                                N/A
+                            </td>
+                            <td>
+                                N/A
+                            </td>
+                            <td>
+                                N/A
+                            </td>
+                            <td>
+                                Adobe Acrobat Reader DC Update 19.010.20069
+                            </td>
+                            <td>
+                                smt1.2
+                            </td>
+                            <td>
+                                Mine
+                            </td>
+                            <td>
+                                Succeeded
+                            </td>
+                            <td>
+                                Succeeded
+                            </td>
+                            <td>
+                                1/22/2019
+                            </td>
+
+                            <td>
+                                <a href="/Infos/Edit?id=36077">Edit</a>
+                                <a href="/Infos/Details?id=36077">Details</a>
+                                <a href="/Infos/Delete?id=36077">Delete</a>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <img src="images/green.png" alt="example" width="13" height="13" />
+                            </td>
+                            <td>
+                                N/A
+                            </td>
+                            <td>
+                                N/A
+                            </td>
+                            <td>
+                                N/A
+                            </td>
+                            <td>
+                                Adobe Acrobat Reader DC Update 19.010.20069
+                            </td>
+                            <td>
+                                smt1.2
+                            </td>
+                            <td>
+                                Mine
+                            </td>
+                            <td>
+                                Succeeded
+                            </td>
+                            <td>
+                                Succeeded
+                            </td>
+                            <td>
+                                1/22/2019
+                            </td>
+
+                            <td>
+                                <a href="/Infos/Edit?id=36090">Edit</a>
+                                <a href="/Infos/Details?id=36090">Details</a>
+                                <a href="/Infos/Delete?id=36090">Delete</a>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <img src="images/green.png" alt="example" width="13" height="13" />
+                            </td>
+                            <td>
+                                N/A
+                            </td>
+                            <td>
+                                N/A
+                            </td>
+                            <td>
+                                N/A
+                            </td>
+                            <td>
+                                Adobe Acrobat Reader DC Update 19.010.20069
+                            </td>
+                            <td>
+                                smt1.2
+                            </td>
+                            <td>
+                                Mine
+                            </td>
+                            <td>
+                                Succeeded
+                            </td>
+                            <td>
+                                Succeeded
+                            </td>
+                            <td>
+                                1/22/2019
+                            </td>
+
+                            <td>
+                                <a href="/Infos/Edit?id=36102">Edit</a>
+                                <a href="/Infos/Details?id=36102">Details</a>
+                                <a href="/Infos/Delete?id=36102">Delete</a>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <img src="images/green.png" alt="example" width="13" height="13" />
+                            </td>
+                            <td>
+                                N/A
+                            </td>
+                            <td>
+                                N/A
+                            </td>
+                            <td>
+                                N/A
+                            </td>
+                            <td>
+                                Adobe Acrobat Reader DC Update 19.010.20069
+                            </td>
+                            <td>
+                                smt1.2
+                            </td>
+                            <td>
+                                Mine
+                            </td>
+                            <td>
+                                Succeeded
+                            </td>
+                            <td>
+                                Succeeded
+                            </td>
+                            <td>
+                                1/22/2019
+                            </td>
+
+                            <td>
+                                <a href="/Infos/Edit?id=36114">Edit</a>
+                                <a href="/Infos/Details?id=36114">Details</a>
+                                <a href="/Infos/Delete?id=36114">Delete</a>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <img src="images/green.png" alt="example" width="13" height="13" />
+                            </td>
+                            <td>
+                                N/A
+                            </td>
+                            <td>
+                                N/A
+                            </td>
+                            <td>
+                                N/A
+                            </td>
+                            <td>
+                                Adobe Acrobat Reader DC Update 18.011.20063
+                            </td>
+                            <td>
+                                smt1.2
+                            </td>
+                            <td>
+                                Mine
+                            </td>
+                            <td>
+                                Succeeded
+                            </td>
+                            <td>
+                                Succeeded
+                            </td>
+                            <td>
+                                1/22/2019
+                            </td>
+
+                            <td>
+                                <a href="/Infos/Edit?id=36078">Edit</a>
+                                <a href="/Infos/Details?id=36078">Details</a>
+                                <a href="/Infos/Delete?id=36078">Delete</a>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <img src="images/green.png" alt="example" width="13" height="13" />
+                            </td>
+                            <td>
+                                N/A
+                            </td>
+                            <td>
+                                N/A
+                            </td>
+                            <td>
+                                N/A
+                            </td>
+                            <td>
+                                Adobe Acrobat Reader DC Update 18.011.20063
+                            </td>
+                            <td>
+                                smt1.2
+                            </td>
+                            <td>
+                                Mine
+                            </td>
+                            <td>
+                                Succeeded
+                            </td>
+                            <td>
+                                Succeeded
+                            </td>
+                            <td>
+                                1/22/2019
+                            </td>
+
+                            <td>
+                                <a href="/Infos/Edit?id=36091">Edit</a>
+                                <a href="/Infos/Details?id=36091">Details</a>
+                                <a href="/Infos/Delete?id=36091">Delete</a>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <img src="images/green.png" alt="example" width="13" height="13" />
+                            </td>
+                            <td>
+                                N/A
+                            </td>
+                            <td>
+                                N/A
+                            </td>
+                            <td>
+                                N/A
+                            </td>
+                            <td>
+                                Adobe Acrobat Reader DC Update 18.011.20063
+                            </td>
+                            <td>
+                                smt1.2
+                            </td>
+                            <td>
+                                Mine
+                            </td>
+                            <td>
+                                Succeeded
+                            </td>
+                            <td>
+                                Succeeded
+                            </td>
+                            <td>
+                                1/22/2019
+                            </td>
+
+                            <td>
+                                <a href="/Infos/Edit?id=36103">Edit</a>
+                                <a href="/Infos/Details?id=36103">Details</a>
+                                <a href="/Infos/Delete?id=36103">Delete</a>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <img src="images/green.png" alt="example" width="13" height="13" />
+                            </td>
+                            <td>
+                                N/A
+                            </td>
+                            <td>
+                                N/A
+                            </td>
+                            <td>
+                                N/A
+                            </td>
+                            <td>
+                                Adobe Acrobat Reader DC Update 18.011.20063
+                            </td>
+                            <td>
+                                smt1.2
+                            </td>
+                            <td>
+                                Mine
+                            </td>
+                            <td>
+                                Succeeded
+                            </td>
+                            <td>
+                                Succeeded
+                            </td>
+                            <td>
+                                1/22/2019
+                            </td>
+
+                            <td>
+                                <a href="/Infos/Edit?id=36115">Edit</a>
+                                <a href="/Infos/Details?id=36115">Details</a>
+                                <a href="/Infos/Delete?id=36115">Delete</a>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <img src="images/green.png" alt="example" width="13" height="13" />
+                            </td>
+                            <td>
+                                N/A
+                            </td>
+                            <td>
+                                N/A
+                            </td>
+                            <td>
+                                N/A
+                            </td>
+                            <td>
+                                Dell OpenManage Inventory Agent (for Dell Business Client Systems) (1652)
+                            </td>
+                            <td>
+                                smt1.2
+                            </td>
+                            <td>
+                                Mine
+                            </td>
+                            <td>
+                                Succeeded
+                            </td>
+                            <td>
+                                Succeeded
+                            </td>
+                            <td>
+                                1/21/2019
+                            </td>
+
+                            <td>
+                                <a href="/Infos/Edit?id=36079">Edit</a>
+                                <a href="/Infos/Details?id=36079">Details</a>
+                                <a href="/Infos/Delete?id=36079">Delete</a>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <img src="images/green.png" alt="example" width="13" height="13" />
+                            </td>
+                            <td>
+                                N/A
+                            </td>
+                            <td>
+                                N/A
+                            </td>
+                            <td>
+                                N/A
+                            </td>
+                            <td>
+                                Dell OpenManage Inventory Agent (for Dell Business Client Systems) (1652)
+                            </td>
+                            <td>
+                                smt1.2
+                            </td>
+                            <td>
+                                Mine
+                            </td>
+                            <td>
+                                Succeeded
+                            </td>
+                            <td>
+                                Succeeded
+                            </td>
+                            <td>
+                                1/21/2019
+                            </td>
+
+                            <td>
+                                <a href="/Infos/Edit?id=36092">Edit</a>
+                                <a href="/Infos/Details?id=36092">Details</a>
+                                <a href="/Infos/Delete?id=36092">Delete</a>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <img src="images/green.png" alt="example" width="13" height="13" />
+                            </td>
+                            <td>
+                                N/A
+                            </td>
+                            <td>
+                                N/A
+                            </td>
+                            <td>
+                                N/A
+                            </td>
+                            <td>
+                                Dell OpenManage Inventory Agent (for Dell Business Client Systems) (1652)
+                            </td>
+                            <td>
+                                smt1.2
+                            </td>
+                            <td>
+                                Mine
+                            </td>
+                            <td>
+                                Succeeded
+                            </td>
+                            <td>
+                                Succeeded
+                            </td>
+                            <td>
+                                1/21/2019
+                            </td>
+
+                            <td>
+                                <a href="/Infos/Edit?id=36104">Edit</a>
+                                <a href="/Infos/Details?id=36104">Details</a>
+                                <a href="/Infos/Delete?id=36104">Delete</a>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <img src="images/green.png" alt="example" width="13" height="13" />
+                            </td>
+                            <td>
+                                N/A
+                            </td>
+                            <td>
+                                N/A
+                            </td>
+                            <td>
+                                N/A
+                            </td>
+                            <td>
+                                Dell OpenManage Inventory Agent (for Dell Business Client Systems) (1652)
+                            </td>
+                            <td>
+                                smt1.2
+                            </td>
+                            <td>
+                                Mine
+                            </td>
+                            <td>
+                                Succeeded
+                            </td>
+                            <td>
+                                Succeeded
+                            </td>
+                            <td>
+                                1/21/2019
+                            </td>
+
+                            <td>
+                                <a href="/Infos/Edit?id=36116">Edit</a>
+                                <a href="/Infos/Details?id=36116">Details</a>
+                                <a href="/Infos/Delete?id=36116">Delete</a>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <img src="images/green.png" alt="example" width="13" height="13" />
+                            </td>
+                            <td>
+                                N/A
+                            </td>
+                            <td>
+                                N/A
+                            </td>
+                            <td>
+                                N/A
+                            </td>
+                            <td>
+                                Microsoft Silverlight (KB4023307)
+                            </td>
+                            <td>
+                                smt1.2
+                            </td>
+                            <td>
+                                Mine
+                            </td>
+                            <td>
+                                Succeeded
+                            </td>
+                            <td>
+                                Succeeded
+                            </td>
+                            <td>
+                                1/21/2019
+                            </td>
+
+                            <td>
+                                <a href="/Infos/Edit?id=36080">Edit</a>
+                                <a href="/Infos/Details?id=36080">Details</a>
+                                <a href="/Infos/Delete?id=36080">Delete</a>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <img src="images/green.png" alt="example" width="13" height="13" />
+                            </td>
+                            <td>
+                                N/A
+                            </td>
+                            <td>
+                                N/A
+                            </td>
+                            <td>
+                                N/A
+                            </td>
+                            <td>
+                                Microsoft Silverlight (KB4023307)
+                            </td>
+                            <td>
+                                smt1.2
+                            </td>
+                            <td>
+                                Mine
+                            </td>
+                            <td>
+                                Succeeded
+                            </td>
+                            <td>
+                                Succeeded
+                            </td>
+                            <td>
+                                1/21/2019
+                            </td>
+
+                            <td>
+                                <a href="/Infos/Edit?id=36093">Edit</a>
+                                <a href="/Infos/Details?id=36093">Details</a>
+                                <a href="/Infos/Delete?id=36093">Delete</a>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <img src="images/green.png" alt="example" width="13" height="13" />
+                            </td>
+                            <td>
+                                N/A
+                            </td>
+                            <td>
+                                N/A
+                            </td>
+                            <td>
+                                N/A
+                            </td>
+                            <td>
+                                Microsoft Silverlight (KB4023307)
+                            </td>
+                            <td>
+                                smt1.2
+                            </td>
+                            <td>
+                                Mine
+                            </td>
+                            <td>
+                                Succeeded
+                            </td>
+                            <td>
+                                Succeeded
+                            </td>
+                            <td>
+                                1/21/2019
+                            </td>
+
+                            <td>
+                                <a href="/Infos/Edit?id=36105">Edit</a>
+                                <a href="/Infos/Details?id=36105">Details</a>
+                                <a href="/Infos/Delete?id=36105">Delete</a>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <img src="images/green.png" alt="example" width="13" height="13" />
+                            </td>
+                            <td>
+                                N/A
+                            </td>
+                            <td>
+                                N/A
+                            </td>
+                            <td>
+                                N/A
+                            </td>
+                            <td>
+                                Microsoft Silverlight (KB4023307)
+                            </td>
+                            <td>
+                                smt1.2
+                            </td>
+                            <td>
+                                Mine
+                            </td>
+                            <td>
+                                Succeeded
+                            </td>
+                            <td>
+                                Succeeded
+                            </td>
+                            <td>
+                                1/21/2019
+                            </td>
+
+                            <td>
+                                <a href="/Infos/Edit?id=36117">Edit</a>
+                                <a href="/Infos/Details?id=36117">Details</a>
+                                <a href="/Infos/Delete?id=36117">Delete</a>
+                            </td>
+                        </tr>
+                </tbody>
+            </table>
+        </section>
+        <section id="Failed" class="tab-panel">
+
+            <!-- Table 2 -->
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>
+                            Active
+                        </th>
+                        <th>
+                            KBID
+                        </th>
+                        <th>
+                            MSRCSeverity
+                        </th>
+                        <th>
+                            Classification
+                        </th>
+                        <th>
+                            Title
+                        </th>
+                        <th>
+                            ICW
+                        </th>
+                        <th>
+                            Server
+                        </th>
+                        <th>
+                            UpdateStatus
+                        </th>
+                        <th>
+                            TestResults
+                        </th>
+                        <th>
+                            Test Date
+                        </th>
+
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                        <tr>
+                            <td>
+                                <img src="images/green.png" alt="example" width="13" height="13" />
+                            </td>
+                            <td>
+                                4486458
+                            </td>
+                            <td>
+                                Critical
+                            </td>
+                            <td>
+                                Security Updates
+                            </td>
+                            <td>
+                                2019-01 Servicing Stack Update for Windows 10 Version 1703 for x64-based Systems (KB4486458)
+                            </td>
+                            <td>
+                                smt1.2
+                            </td>
+                            <td>
+                                Mine
+                            </td>
+                            <td>
+                                Succeeded
+                            </td>
+                            <td>
+                                Failed
+                            </td>
+                            <td>
+                                1/30/2019
+                            </td>
+
+                            <td>
+                                <a href="/Infos/Edit?id=36072">Edit</a>
+                                <a href="/Infos/Details?id=36072">Details</a>
+                                <a href="/Infos/Delete?id=36072">Delete</a>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <img src="images/grey.png" alt="example" width="13" height="13" />
+                            </td>
+                            <td>
+                                4486458
+                            </td>
+                            <td>
+                                Critical
+                            </td>
+                            <td>
+                                Security Updates
+                            </td>
+                            <td>
+                                2019-01 Servicing Stack Update for Windows 10 Version 1703 for x64-based Systems (KB4486458)
+                            </td>
+                            <td>
+                                smt1.2
+                            </td>
+                            <td>
+                                Mine
+                            </td>
+                            <td>
+                                Failed
+                            </td>
+                            <td>
+                                Failed
+                            </td>
+                            <td>
+                                1/21/2019
+                            </td>
+
+                            <td>
+                                <a href="/Infos/Edit?id=36081">Edit</a>
+                                <a href="/Infos/Details?id=36081">Details</a>
+                                <a href="/Infos/Delete?id=36081">Delete</a>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <img src="images/grey.png" alt="example" width="13" height="13" />
+                            </td>
+                            <td>
+                                4480973
+                            </td>
+                            <td>
+                                Critical
+                            </td>
+                            <td>
+                                Security Updates
+                            </td>
+                            <td>
+                                2019-01 Cumulative Update for Windows 10 Version 1703 for x64-based Systems (KB4480973)
+                            </td>
+                            <td>
+                                smt1.2
+                            </td>
+                            <td>
+                                Mine
+                            </td>
+                            <td>
+                                Failed
+                            </td>
+                            <td>
+                                Failed
+                            </td>
+                            <td>
+                                1/21/2019
+                            </td>
+
+                            <td>
+                                <a href="/Infos/Edit?id=36082">Edit</a>
+                                <a href="/Infos/Details?id=36082">Details</a>
+                                <a href="/Infos/Delete?id=36082">Delete</a>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <img src="images/grey.png" alt="example" width="13" height="13" />
+                            </td>
+                            <td>
+                                4486458
+                            </td>
+                            <td>
+                                Critical
+                            </td>
+                            <td>
+                                Security Updates
+                            </td>
+                            <td>
+                                2019-01 Servicing Stack Update for Windows 10 Version 1703 for x64-based Systems (KB4486458)
+                            </td>
+                            <td>
+                                smt1.2
+                            </td>
+                            <td>
+                                Mine
+                            </td>
+                            <td>
+                                Failed
+                            </td>
+                            <td>
+                                Failed
+                            </td>
+                            <td>
+                                1/21/2019
+                            </td>
+
+                            <td>
+                                <a href="/Infos/Edit?id=36094">Edit</a>
+                                <a href="/Infos/Details?id=36094">Details</a>
+                                <a href="/Infos/Delete?id=36094">Delete</a>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <img src="images/grey.png" alt="example" width="13" height="13" />
+                            </td>
+                            <td>
+                                4480973
+                            </td>
+                            <td>
+                                Critical
+                            </td>
+                            <td>
+                                Security Updates
+                            </td>
+                            <td>
+                                2019-01 Cumulative Update for Windows 10 Version 1703 for x64-based Systems (KB4480973)
+                            </td>
+                            <td>
+                                smt1.2
+                            </td>
+                            <td>
+                                Mine
+                            </td>
+                            <td>
+                                Failed
+                            </td>
+                            <td>
+                                Failed
+                            </td>
+                            <td>
+                                1/21/2019
+                            </td>
+
+                            <td>
+                                <a href="/Infos/Edit?id=36095">Edit</a>
+                                <a href="/Infos/Details?id=36095">Details</a>
+                                <a href="/Infos/Delete?id=36095">Delete</a>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <img src="images/grey.png" alt="example" width="13" height="13" />
+                            </td>
+                            <td>
+                                4486458
+                            </td>
+                            <td>
+                                Critical
+                            </td>
+                            <td>
+                                Security Updates
+                            </td>
+                            <td>
+                                2019-01 Servicing Stack Update for Windows 10 Version 1703 for x64-based Systems (KB4486458)
+                            </td>
+                            <td>
+                                smt1.2
+                            </td>
+                            <td>
+                                Mine
+                            </td>
+                            <td>
+                                Failed
+                            </td>
+                            <td>
+                                Failed
+                            </td>
+                            <td>
+                                1/21/2019
+                            </td>
+
+                            <td>
+                                <a href="/Infos/Edit?id=36106">Edit</a>
+                                <a href="/Infos/Details?id=36106">Details</a>
+                                <a href="/Infos/Delete?id=36106">Delete</a>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <img src="images/grey.png" alt="example" width="13" height="13" />
+                            </td>
+                            <td>
+                                4480973
+                            </td>
+                            <td>
+                                Critical
+                            </td>
+                            <td>
+                                Security Updates
+                            </td>
+                            <td>
+                                2019-01 Cumulative Update for Windows 10 Version 1703 for x64-based Systems (KB4480973)
+                            </td>
+                            <td>
+                                smt1.2
+                            </td>
+                            <td>
+                                Mine
+                            </td>
+                            <td>
+                                Failed
+                            </td>
+                            <td>
+                                Failed
+                            </td>
+                            <td>
+                                1/21/2019
+                            </td>
+
+                            <td>
+                                <a href="/Infos/Edit?id=36107">Edit</a>
+                                <a href="/Infos/Details?id=36107">Details</a>
+                                <a href="/Infos/Delete?id=36107">Delete</a>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <img src="images/grey.png" alt="example" width="13" height="13" />
+                            </td>
+                            <td>
+                                4486458
+                            </td>
+                            <td>
+                                Critical
+                            </td>
+                            <td>
+                                Security Updates
+                            </td>
+                            <td>
+                                2019-01 Servicing Stack Update for Windows 10 Version 1703 for x64-based Systems (KB4486458)
+                            </td>
+                            <td>
+                                smt1.2
+                            </td>
+                            <td>
+                                Mine
+                            </td>
+                            <td>
+                                Failed
+                            </td>
+                            <td>
+                                Failed
+                            </td>
+                            <td>
+                                1/21/2019
+                            </td>
+
+                            <td>
+                                <a href="/Infos/Edit?id=36118">Edit</a>
+                                <a href="/Infos/Details?id=36118">Details</a>
+                                <a href="/Infos/Delete?id=36118">Delete</a>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <img src="images/grey.png" alt="example" width="13" height="13" />
+                            </td>
+                            <td>
+                                4480973
+                            </td>
+                            <td>
+                                Critical
+                            </td>
+                            <td>
+                                Security Updates
+                            </td>
+                            <td>
+                                2019-01 Cumulative Update for Windows 10 Version 1703 for x64-based Systems (KB4480973)
+                            </td>
+                            <td>
+                                smt1.2
+                            </td>
+                            <td>
+                                Mine
+                            </td>
+                            <td>
+                                Failed
+                            </td>
+                            <td>
+                                Failed
+                            </td>
+                            <td>
+                                1/21/2019
+                            </td>
+
+                            <td>
+                                <a href="/Infos/Edit?id=36119">Edit</a>
+                                <a href="/Infos/Details?id=36119">Details</a>
+                                <a href="/Infos/Delete?id=36119">Delete</a>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <img src="images/grey.png" alt="example" width="13" height="13" />
+                            </td>
+                            <td>
+                                4091663
+                            </td>
+                            <td>
+                                Unspecified
+                            </td>
+                            <td>
+                                Updates
+                            </td>
+                            <td>
+                                2018-09 Update for Windows 10 Version 1703 for x64-based Systems (KB4091663)
+                            </td>
+                            <td>
+                                smt1.2
+                            </td>
+                            <td>
+                                Mine
+                            </td>
+                            <td>
+                                Failed
+                            </td>
+                            <td>
+                                Failed
+                            </td>
+                            <td>
+                                1/21/2019
+                            </td>
+
+                            <td>
+                                <a href="/Infos/Edit?id=36083">Edit</a>
+                                <a href="/Infos/Details?id=36083">Details</a>
+                                <a href="/Infos/Delete?id=36083">Delete</a>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <img src="images/grey.png" alt="example" width="13" height="13" />
+                            </td>
+                            <td>
+                                4091663
+                            </td>
+                            <td>
+                                Unspecified
+                            </td>
+                            <td>
+                                Updates
+                            </td>
+                            <td>
+                                2018-09 Update for Windows 10 Version 1703 for x64-based Systems (KB4091663)
+                            </td>
+                            <td>
+                                smt1.2
+                            </td>
+                            <td>
+                                Mine
+                            </td>
+                            <td>
+                                Failed
+                            </td>
+                            <td>
+                                Failed
+                            </td>
+                            <td>
+                                1/21/2019
+                            </td>
+
+                            <td>
+                                <a href="/Infos/Edit?id=36096">Edit</a>
+                                <a href="/Infos/Details?id=36096">Details</a>
+                                <a href="/Infos/Delete?id=36096">Delete</a>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <img src="images/grey.png" alt="example" width="13" height="13" />
+                            </td>
+                            <td>
+                                4091663
+                            </td>
+                            <td>
+                                Unspecified
+                            </td>
+                            <td>
+                                Updates
+                            </td>
+                            <td>
+                                2018-09 Update for Windows 10 Version 1703 for x64-based Systems (KB4091663)
+                            </td>
+                            <td>
+                                smt1.2
+                            </td>
+                            <td>
+                                Mine
+                            </td>
+                            <td>
+                                Failed
+                            </td>
+                            <td>
+                                Failed
+                            </td>
+                            <td>
+                                1/21/2019
+                            </td>
+
+                            <td>
+                                <a href="/Infos/Edit?id=36108">Edit</a>
+                                <a href="/Infos/Details?id=36108">Details</a>
+                                <a href="/Infos/Delete?id=36108">Delete</a>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <img src="images/grey.png" alt="example" width="13" height="13" />
+                            </td>
+                            <td>
+                                4091663
+                            </td>
+                            <td>
+                                Unspecified
+                            </td>
+                            <td>
+                                Updates
+                            </td>
+                            <td>
+                                2018-09 Update for Windows 10 Version 1703 for x64-based Systems (KB4091663)
+                            </td>
+                            <td>
+                                smt1.2
+                            </td>
+                            <td>
+                                Mine
+                            </td>
+                            <td>
+                                Failed
+                            </td>
+                            <td>
+                                Failed
+                            </td>
+                            <td>
+                                1/21/2019
+                            </td>
+
+                            <td>
+                                <a href="/Infos/Edit?id=36120">Edit</a>
+                                <a href="/Infos/Details?id=36120">Details</a>
+                                <a href="/Infos/Delete?id=36120">Delete</a>
+                            </td>
+                        </tr>
+                </tbody>
+            </table>
+        </section>
+        <section id="Active" class="tab-panel">
+
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>
+                            Active
+                        </th>
+                        <th>
+                            KBID
+                        </th>
+                        <th>
+                            MSRCSeverity
+                        </th>
+                        <th>
+                            Classification
+                        </th>
+                        <th>
+                            Title
+                        </th>
+                        <th>
+                            ICW
+                        </th>
+                        <th>
+                            Server
+                        </th>
+                        <th>
+                            UpdateStatus
+                        </th>
+                        <th>
+                            TestResults
+                        </th>
+                        <th>
+                            Test Date
+                        </th>
+
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                        <tr>
+                            <td>
+                                <img src="images/green.png" alt="example" width="13" height="13" />
+                            </td>
+                            <td>
+                                4486458
+                            </td>
+                            <td>
+                                Critical
+                            </td>
+                            <td>
+                                Security Updates
+                            </td>
+                            <td>
+                                2019-01 Servicing Stack Update for Windows 10 Version 1703 for x64-based Systems (KB4486458)
+                            </td>
+                            <td>
+                                smt1.2
+                            </td>
+                            <td>
+                                Mine
+                            </td>
+                            <td>
+                                Succeeded
+                            </td>
+                            <td>
+                                Failed
+                            </td>
+                            <td>
+                                1/30/2019
+                            </td>
+
+                            <td>
+                                <a href="/Infos/Edit?id=36072">Edit</a>
+                                <a href="/Infos/Details?id=36072">Details</a>
+                                <a href="/Infos/Delete?id=36072">Delete</a>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <img src="images/green.png" alt="example" width="13" height="13" />
+                            </td>
+                            <td>
+                                4486458
+                            </td>
+                            <td>
+                                Critical
+                            </td>
+                            <td>
+                                Security Updates
+                            </td>
+                            <td>
+                                2019-01 Servicing Stack Update for Windows 10 Version 1703 for x64-based Systems (KB4486458)
+                            </td>
+                            <td>
+                                smt1.2
+                            </td>
+                            <td>
+                                Mine
+                            </td>
+                            <td>
+                                Succeeded
+                            </td>
+                            <td>
+                                Succeeded
+                            </td>
+                            <td>
+                                1/23/2019
+                            </td>
+
+                            <td>
+                                <a href="/Infos/Edit?id=36085">Edit</a>
+                                <a href="/Infos/Details?id=36085">Details</a>
+                                <a href="/Infos/Delete?id=36085">Delete</a>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <img src="images/green.png" alt="example" width="13" height="13" />
+                            </td>
+                            <td>
+                                4486458
+                            </td>
+                            <td>
+                                Critical
+                            </td>
+                            <td>
+                                Security Updates
+                            </td>
+                            <td>
+                                2019-01 Servicing Stack Update for Windows 10 Version 1703 for x64-based Systems (KB4486458)
+                            </td>
+                            <td>
+                                smt1.2
+                            </td>
+                            <td>
+                                Mine
+                            </td>
+                            <td>
+                                Succeeded
+                            </td>
+                            <td>
+                                Succeeded
+                            </td>
+                            <td>
+                                1/23/2019
+                            </td>
+
+                            <td>
+                                <a href="/Infos/Edit?id=36097">Edit</a>
+                                <a href="/Infos/Details?id=36097">Details</a>
+                                <a href="/Infos/Delete?id=36097">Delete</a>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <img src="images/green.png" alt="example" width="13" height="13" />
+                            </td>
+                            <td>
+                                4486458
+                            </td>
+                            <td>
+                                Critical
+                            </td>
+                            <td>
+                                Security Updates
+                            </td>
+                            <td>
+                                2019-01 Servicing Stack Update for Windows 10 Version 1703 for x64-based Systems (KB4486458)
+                            </td>
+                            <td>
+                                smt1.2
+                            </td>
+                            <td>
+                                Mine
+                            </td>
+                            <td>
+                                Succeeded
+                            </td>
+                            <td>
+                                Succeeded
+                            </td>
+                            <td>
+                                1/23/2019
+                            </td>
+
+                            <td>
+                                <a href="/Infos/Edit?id=36109">Edit</a>
+                                <a href="/Infos/Details?id=36109">Details</a>
+                                <a href="/Infos/Delete?id=36109">Delete</a>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <img src="images/green.png" alt="example" width="13" height="13" />
+                            </td>
+                            <td>
+                                890830
+                            </td>
+                            <td>
+                                Unspecified
+                            </td>
+                            <td>
+                                Update Rollups
+                            </td>
+                            <td>
+                                Windows Malicious Software Removal Tool x64 - January 2019 (KB890830)
+                            </td>
+                            <td>
+                                smt1.2
+                            </td>
+                            <td>
+                                Mine
+                            </td>
+                            <td>
+                                Succeeded
+                            </td>
+                            <td>
+                                Succeeded
+                            </td>
+                            <td>
+                                1/23/2019
+                            </td>
+
+                            <td>
+                                <a href="/Infos/Edit?id=36073">Edit</a>
+                                <a href="/Infos/Details?id=36073">Details</a>
+                                <a href="/Infos/Delete?id=36073">Delete</a>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <img src="images/green.png" alt="example" width="13" height="13" />
+                            </td>
+                            <td>
+                                890830
+                            </td>
+                            <td>
+                                Unspecified
+                            </td>
+                            <td>
+                                Update Rollups
+                            </td>
+                            <td>
+                                Windows Malicious Software Removal Tool x64 - January 2019 (KB890830)
+                            </td>
+                            <td>
+                                smt1.2
+                            </td>
+                            <td>
+                                Mine
+                            </td>
+                            <td>
+                                Succeeded
+                            </td>
+                            <td>
+                                Succeeded
+                            </td>
+                            <td>
+                                1/23/2019
+                            </td>
+
+                            <td>
+                                <a href="/Infos/Edit?id=36086">Edit</a>
+                                <a href="/Infos/Details?id=36086">Details</a>
+                                <a href="/Infos/Delete?id=36086">Delete</a>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <img src="images/green.png" alt="example" width="13" height="13" />
+                            </td>
+                            <td>
+                                890830
+                            </td>
+                            <td>
+                                Unspecified
+                            </td>
+                            <td>
+                                Update Rollups
+                            </td>
+                            <td>
+                                Windows Malicious Software Removal Tool x64 - January 2019 (KB890830)
+                            </td>
+                            <td>
+                                smt1.2
+                            </td>
+                            <td>
+                                Mine
+                            </td>
+                            <td>
+                                Succeeded
+                            </td>
+                            <td>
+                                Succeeded
+                            </td>
+                            <td>
+                                1/23/2019
+                            </td>
+
+                            <td>
+                                <a href="/Infos/Edit?id=36098">Edit</a>
+                                <a href="/Infos/Details?id=36098">Details</a>
+                                <a href="/Infos/Delete?id=36098">Delete</a>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <img src="images/green.png" alt="example" width="13" height="13" />
+                            </td>
+                            <td>
+                                890830
+                            </td>
+                            <td>
+                                Unspecified
+                            </td>
+                            <td>
+                                Update Rollups
+                            </td>
+                            <td>
+                                Windows Malicious Software Removal Tool x64 - January 2019 (KB890830)
+                            </td>
+                            <td>
+                                smt1.2
+                            </td>
+                            <td>
+                                Mine
+                            </td>
+                            <td>
+                                Succeeded
+                            </td>
+                            <td>
+                                Succeeded
+                            </td>
+                            <td>
+                                1/23/2019
+                            </td>
+
+                            <td>
+                                <a href="/Infos/Edit?id=36110">Edit</a>
+                                <a href="/Infos/Details?id=36110">Details</a>
+                                <a href="/Infos/Delete?id=36110">Delete</a>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <img src="images/green.png" alt="example" width="13" height="13" />
+                            </td>
+                            <td>
+                                4480973
+                            </td>
+                            <td>
+                                Critical
+                            </td>
+                            <td>
+                                Security Updates
+                            </td>
+                            <td>
+                                2019-01 Cumulative Update for Windows 10 Version 1703 for x64-based Systems (KB4480973)
+                            </td>
+                            <td>
+                                smt1.2
+                            </td>
+                            <td>
+                                Mine
+                            </td>
+                            <td>
+                                Succeeded
+                            </td>
+                            <td>
+                                Succeeded
+                            </td>
+                            <td>
+                                1/23/2019
+                            </td>
+
+                            <td>
+                                <a href="/Infos/Edit?id=36074">Edit</a>
+                                <a href="/Infos/Details?id=36074">Details</a>
+                                <a href="/Infos/Delete?id=36074">Delete</a>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <img src="images/green.png" alt="example" width="13" height="13" />
+                            </td>
+                            <td>
+                                4480973
+                            </td>
+                            <td>
+                                Critical
+                            </td>
+                            <td>
+                                Security Updates
+                            </td>
+                            <td>
+                                2019-01 Cumulative Update for Windows 10 Version 1703 for x64-based Systems (KB4480973)
+                            </td>
+                            <td>
+                                smt1.2
+                            </td>
+                            <td>
+                                Mine
+                            </td>
+                            <td>
+                                Succeeded
+                            </td>
+                            <td>
+                                Succeeded
+                            </td>
+                            <td>
+                                1/23/2019
+                            </td>
+
+                            <td>
+                                <a href="/Infos/Edit?id=36087">Edit</a>
+                                <a href="/Infos/Details?id=36087">Details</a>
+                                <a href="/Infos/Delete?id=36087">Delete</a>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <img src="images/green.png" alt="example" width="13" height="13" />
+                            </td>
+                            <td>
+                                4480973
+                            </td>
+                            <td>
+                                Critical
+                            </td>
+                            <td>
+                                Security Updates
+                            </td>
+                            <td>
+                                2019-01 Cumulative Update for Windows 10 Version 1703 for x64-based Systems (KB4480973)
+                            </td>
+                            <td>
+                                smt1.2
+                            </td>
+                            <td>
+                                Mine
+                            </td>
+                            <td>
+                                Succeeded
+                            </td>
+                            <td>
+                                Succeeded
+                            </td>
+                            <td>
+                                1/23/2019
+                            </td>
+
+                            <td>
+                                <a href="/Infos/Edit?id=36099">Edit</a>
+                                <a href="/Infos/Details?id=36099">Details</a>
+                                <a href="/Infos/Delete?id=36099">Delete</a>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <img src="images/green.png" alt="example" width="13" height="13" />
+                            </td>
+                            <td>
+                                4480973
+                            </td>
+                            <td>
+                                Critical
+                            </td>
+                            <td>
+                                Security Updates
+                            </td>
+                            <td>
+                                2019-01 Cumulative Update for Windows 10 Version 1703 for x64-based Systems (KB4480973)
+                            </td>
+                            <td>
+                                smt1.2
+                            </td>
+                            <td>
+                                Mine
+                            </td>
+                            <td>
+                                Succeeded
+                            </td>
+                            <td>
+                                Succeeded
+                            </td>
+                            <td>
+                                1/23/2019
+                            </td>
+
+                            <td>
+                                <a href="/Infos/Edit?id=36111">Edit</a>
+                                <a href="/Infos/Details?id=36111">Details</a>
+                                <a href="/Infos/Delete?id=36111">Delete</a>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <img src="images/green.png" alt="example" width="13" height="13" />
+                            </td>
+                            <td>
+                                4480979
+                            </td>
+                            <td>
+                                Critical
+                            </td>
+                            <td>
+                                Security Updates
+                            </td>
+                            <td>
+                                2019-01 Security Update for Adobe Flash Player for Windows 10 Version 1703 for x64-based Systems (KB4480979)
+                            </td>
+                            <td>
+                                smt1.2
+                            </td>
+                            <td>
+                                Mine
+                            </td>
+                            <td>
+                                Succeeded
+                            </td>
+                            <td>
+                                Succeeded
+                            </td>
+                            <td>
+                                1/23/2019
+                            </td>
+
+                            <td>
+                                <a href="/Infos/Edit?id=36075">Edit</a>
+                                <a href="/Infos/Details?id=36075">Details</a>
+                                <a href="/Infos/Delete?id=36075">Delete</a>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <img src="images/green.png" alt="example" width="13" height="13" />
+                            </td>
+                            <td>
+                                4480979
+                            </td>
+                            <td>
+                                Critical
+                            </td>
+                            <td>
+                                Security Updates
+                            </td>
+                            <td>
+                                2019-01 Security Update for Adobe Flash Player for Windows 10 Version 1703 for x64-based Systems (KB4480979)
+                            </td>
+                            <td>
+                                smt1.2
+                            </td>
+                            <td>
+                                Mine
+                            </td>
+                            <td>
+                                Succeeded
+                            </td>
+                            <td>
+                                Succeeded
+                            </td>
+                            <td>
+                                1/23/2019
+                            </td>
+
+                            <td>
+                                <a href="/Infos/Edit?id=36088">Edit</a>
+                                <a href="/Infos/Details?id=36088">Details</a>
+                                <a href="/Infos/Delete?id=36088">Delete</a>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <img src="images/green.png" alt="example" width="13" height="13" />
+                            </td>
+                            <td>
+                                4480979
+                            </td>
+                            <td>
+                                Critical
+                            </td>
+                            <td>
+                                Security Updates
+                            </td>
+                            <td>
+                                2019-01 Security Update for Adobe Flash Player for Windows 10 Version 1703 for x64-based Systems (KB4480979)
+                            </td>
+                            <td>
+                                smt1.2
+                            </td>
+                            <td>
+                                Mine
+                            </td>
+                            <td>
+                                Succeeded
+                            </td>
+                            <td>
+                                Succeeded
+                            </td>
+                            <td>
+                                1/23/2019
+                            </td>
+
+                            <td>
+                                <a href="/Infos/Edit?id=36100">Edit</a>
+                                <a href="/Infos/Details?id=36100">Details</a>
+                                <a href="/Infos/Delete?id=36100">Delete</a>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <img src="images/green.png" alt="example" width="13" height="13" />
+                            </td>
+                            <td>
+                                4480979
+                            </td>
+                            <td>
+                                Critical
+                            </td>
+                            <td>
+                                Security Updates
+                            </td>
+                            <td>
+                                2019-01 Security Update for Adobe Flash Player for Windows 10 Version 1703 for x64-based Systems (KB4480979)
+                            </td>
+                            <td>
+                                smt1.2
+                            </td>
+                            <td>
+                                Mine
+                            </td>
+                            <td>
+                                Succeeded
+                            </td>
+                            <td>
+                                Succeeded
+                            </td>
+                            <td>
+                                1/23/2019
+                            </td>
+
+                            <td>
+                                <a href="/Infos/Edit?id=36112">Edit</a>
+                                <a href="/Infos/Details?id=36112">Details</a>
+                                <a href="/Infos/Delete?id=36112">Delete</a>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <img src="images/green.png" alt="example" width="13" height="13" />
+                            </td>
+                            <td>
+                                4091663
+                            </td>
+                            <td>
+                                Unspecified
+                            </td>
+                            <td>
+                                Updates
+                            </td>
+                            <td>
+                                2018-10 Update for Windows 10 Version 1703 for x64-based Systems (KB4091663)
+                            </td>
+                            <td>
+                                smt1.2
+                            </td>
+                            <td>
+                                Mine
+                            </td>
+                            <td>
+                                Succeeded
+                            </td>
+                            <td>
+                                Succeeded
+                            </td>
+                            <td>
+                                1/23/2019
+                            </td>
+
+                            <td>
+                                <a href="/Infos/Edit?id=36076">Edit</a>
+                                <a href="/Infos/Details?id=36076">Details</a>
+                                <a href="/Infos/Delete?id=36076">Delete</a>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <img src="images/green.png" alt="example" width="13" height="13" />
+                            </td>
+                            <td>
+                                4091663
+                            </td>
+                            <td>
+                                Unspecified
+                            </td>
+                            <td>
+                                Updates
+                            </td>
+                            <td>
+                                2018-10 Update for Windows 10 Version 1703 for x64-based Systems (KB4091663)
+                            </td>
+                            <td>
+                                smt1.2
+                            </td>
+                            <td>
+                                Mine
+                            </td>
+                            <td>
+                                Succeeded
+                            </td>
+                            <td>
+                                Succeeded
+                            </td>
+                            <td>
+                                1/23/2019
+                            </td>
+
+                            <td>
+                                <a href="/Infos/Edit?id=36089">Edit</a>
+                                <a href="/Infos/Details?id=36089">Details</a>
+                                <a href="/Infos/Delete?id=36089">Delete</a>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <img src="images/green.png" alt="example" width="13" height="13" />
+                            </td>
+                            <td>
+                                4091663
+                            </td>
+                            <td>
+                                Unspecified
+                            </td>
+                            <td>
+                                Updates
+                            </td>
+                            <td>
+                                2018-10 Update for Windows 10 Version 1703 for x64-based Systems (KB4091663)
+                            </td>
+                            <td>
+                                smt1.2
+                            </td>
+                            <td>
+                                Mine
+                            </td>
+                            <td>
+                                Succeeded
+                            </td>
+                            <td>
+                                Succeeded
+                            </td>
+                            <td>
+                                1/23/2019
+                            </td>
+
+                            <td>
+                                <a href="/Infos/Edit?id=36101">Edit</a>
+                                <a href="/Infos/Details?id=36101">Details</a>
+                                <a href="/Infos/Delete?id=36101">Delete</a>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <img src="images/green.png" alt="example" width="13" height="13" />
+                            </td>
+                            <td>
+                                4091663
+                            </td>
+                            <td>
+                                Unspecified
+                            </td>
+                            <td>
+                                Updates
+                            </td>
+                            <td>
+                                2018-10 Update for Windows 10 Version 1703 for x64-based Systems (KB4091663)
+                            </td>
+                            <td>
+                                smt1.2
+                            </td>
+                            <td>
+                                Mine
+                            </td>
+                            <td>
+                                Succeeded
+                            </td>
+                            <td>
+                                Succeeded
+                            </td>
+                            <td>
+                                1/23/2019
+                            </td>
+
+                            <td>
+                                <a href="/Infos/Edit?id=36113">Edit</a>
+                                <a href="/Infos/Details?id=36113">Details</a>
+                                <a href="/Infos/Delete?id=36113">Delete</a>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <img src="images/green.png" alt="example" width="13" height="13" />
+                            </td>
+                            <td>
+                                N/A
+                            </td>
+                            <td>
+                                N/A
+                            </td>
+                            <td>
+                                N/A
+                            </td>
+                            <td>
+                                Adobe Acrobat Reader DC Update 19.010.20069
+                            </td>
+                            <td>
+                                smt1.2
+                            </td>
+                            <td>
+                                Mine
+                            </td>
+                            <td>
+                                Succeeded
+                            </td>
+                            <td>
+                                Succeeded
+                            </td>
+                            <td>
+                                1/22/2019
+                            </td>
+
+                            <td>
+                                <a href="/Infos/Edit?id=36077">Edit</a>
+                                <a href="/Infos/Details?id=36077">Details</a>
+                                <a href="/Infos/Delete?id=36077">Delete</a>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <img src="images/green.png" alt="example" width="13" height="13" />
+                            </td>
+                            <td>
+                                N/A
+                            </td>
+                            <td>
+                                N/A
+                            </td>
+                            <td>
+                                N/A
+                            </td>
+                            <td>
+                                Adobe Acrobat Reader DC Update 19.010.20069
+                            </td>
+                            <td>
+                                smt1.2
+                            </td>
+                            <td>
+                                Mine
+                            </td>
+                            <td>
+                                Succeeded
+                            </td>
+                            <td>
+                                Succeeded
+                            </td>
+                            <td>
+                                1/22/2019
+                            </td>
+
+                            <td>
+                                <a href="/Infos/Edit?id=36090">Edit</a>
+                                <a href="/Infos/Details?id=36090">Details</a>
+                                <a href="/Infos/Delete?id=36090">Delete</a>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <img src="images/green.png" alt="example" width="13" height="13" />
+                            </td>
+                            <td>
+                                N/A
+                            </td>
+                            <td>
+                                N/A
+                            </td>
+                            <td>
+                                N/A
+                            </td>
+                            <td>
+                                Adobe Acrobat Reader DC Update 19.010.20069
+                            </td>
+                            <td>
+                                smt1.2
+                            </td>
+                            <td>
+                                Mine
+                            </td>
+                            <td>
+                                Succeeded
+                            </td>
+                            <td>
+                                Succeeded
+                            </td>
+                            <td>
+                                1/22/2019
+                            </td>
+
+                            <td>
+                                <a href="/Infos/Edit?id=36102">Edit</a>
+                                <a href="/Infos/Details?id=36102">Details</a>
+                                <a href="/Infos/Delete?id=36102">Delete</a>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <img src="images/green.png" alt="example" width="13" height="13" />
+                            </td>
+                            <td>
+                                N/A
+                            </td>
+                            <td>
+                                N/A
+                            </td>
+                            <td>
+                                N/A
+                            </td>
+                            <td>
+                                Adobe Acrobat Reader DC Update 19.010.20069
+                            </td>
+                            <td>
+                                smt1.2
+                            </td>
+                            <td>
+                                Mine
+                            </td>
+                            <td>
+                                Succeeded
+                            </td>
+                            <td>
+                                Succeeded
+                            </td>
+                            <td>
+                                1/22/2019
+                            </td>
+
+                            <td>
+                                <a href="/Infos/Edit?id=36114">Edit</a>
+                                <a href="/Infos/Details?id=36114">Details</a>
+                                <a href="/Infos/Delete?id=36114">Delete</a>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <img src="images/green.png" alt="example" width="13" height="13" />
+                            </td>
+                            <td>
+                                N/A
+                            </td>
+                            <td>
+                                N/A
+                            </td>
+                            <td>
+                                N/A
+                            </td>
+                            <td>
+                                Adobe Acrobat Reader DC Update 18.011.20063
+                            </td>
+                            <td>
+                                smt1.2
+                            </td>
+                            <td>
+                                Mine
+                            </td>
+                            <td>
+                                Succeeded
+                            </td>
+                            <td>
+                                Succeeded
+                            </td>
+                            <td>
+                                1/22/2019
+                            </td>
+
+                            <td>
+                                <a href="/Infos/Edit?id=36078">Edit</a>
+                                <a href="/Infos/Details?id=36078">Details</a>
+                                <a href="/Infos/Delete?id=36078">Delete</a>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <img src="images/green.png" alt="example" width="13" height="13" />
+                            </td>
+                            <td>
+                                N/A
+                            </td>
+                            <td>
+                                N/A
+                            </td>
+                            <td>
+                                N/A
+                            </td>
+                            <td>
+                                Adobe Acrobat Reader DC Update 18.011.20063
+                            </td>
+                            <td>
+                                smt1.2
+                            </td>
+                            <td>
+                                Mine
+                            </td>
+                            <td>
+                                Succeeded
+                            </td>
+                            <td>
+                                Succeeded
+                            </td>
+                            <td>
+                                1/22/2019
+                            </td>
+
+                            <td>
+                                <a href="/Infos/Edit?id=36091">Edit</a>
+                                <a href="/Infos/Details?id=36091">Details</a>
+                                <a href="/Infos/Delete?id=36091">Delete</a>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <img src="images/green.png" alt="example" width="13" height="13" />
+                            </td>
+                            <td>
+                                N/A
+                            </td>
+                            <td>
+                                N/A
+                            </td>
+                            <td>
+                                N/A
+                            </td>
+                            <td>
+                                Adobe Acrobat Reader DC Update 18.011.20063
+                            </td>
+                            <td>
+                                smt1.2
+                            </td>
+                            <td>
+                                Mine
+                            </td>
+                            <td>
+                                Succeeded
+                            </td>
+                            <td>
+                                Succeeded
+                            </td>
+                            <td>
+                                1/22/2019
+                            </td>
+
+                            <td>
+                                <a href="/Infos/Edit?id=36103">Edit</a>
+                                <a href="/Infos/Details?id=36103">Details</a>
+                                <a href="/Infos/Delete?id=36103">Delete</a>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <img src="images/green.png" alt="example" width="13" height="13" />
+                            </td>
+                            <td>
+                                N/A
+                            </td>
+                            <td>
+                                N/A
+                            </td>
+                            <td>
+                                N/A
+                            </td>
+                            <td>
+                                Adobe Acrobat Reader DC Update 18.011.20063
+                            </td>
+                            <td>
+                                smt1.2
+                            </td>
+                            <td>
+                                Mine
+                            </td>
+                            <td>
+                                Succeeded
+                            </td>
+                            <td>
+                                Succeeded
+                            </td>
+                            <td>
+                                1/22/2019
+                            </td>
+
+                            <td>
+                                <a href="/Infos/Edit?id=36115">Edit</a>
+                                <a href="/Infos/Details?id=36115">Details</a>
+                                <a href="/Infos/Delete?id=36115">Delete</a>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <img src="images/green.png" alt="example" width="13" height="13" />
+                            </td>
+                            <td>
+                                N/A
+                            </td>
+                            <td>
+                                N/A
+                            </td>
+                            <td>
+                                N/A
+                            </td>
+                            <td>
+                                Dell OpenManage Inventory Agent (for Dell Business Client Systems) (1652)
+                            </td>
+                            <td>
+                                smt1.2
+                            </td>
+                            <td>
+                                Mine
+                            </td>
+                            <td>
+                                Succeeded
+                            </td>
+                            <td>
+                                Succeeded
+                            </td>
+                            <td>
+                                1/21/2019
+                            </td>
+
+                            <td>
+                                <a href="/Infos/Edit?id=36079">Edit</a>
+                                <a href="/Infos/Details?id=36079">Details</a>
+                                <a href="/Infos/Delete?id=36079">Delete</a>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <img src="images/green.png" alt="example" width="13" height="13" />
+                            </td>
+                            <td>
+                                N/A
+                            </td>
+                            <td>
+                                N/A
+                            </td>
+                            <td>
+                                N/A
+                            </td>
+                            <td>
+                                Dell OpenManage Inventory Agent (for Dell Business Client Systems) (1652)
+                            </td>
+                            <td>
+                                smt1.2
+                            </td>
+                            <td>
+                                Mine
+                            </td>
+                            <td>
+                                Succeeded
+                            </td>
+                            <td>
+                                Succeeded
+                            </td>
+                            <td>
+                                1/21/2019
+                            </td>
+
+                            <td>
+                                <a href="/Infos/Edit?id=36092">Edit</a>
+                                <a href="/Infos/Details?id=36092">Details</a>
+                                <a href="/Infos/Delete?id=36092">Delete</a>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <img src="images/green.png" alt="example" width="13" height="13" />
+                            </td>
+                            <td>
+                                N/A
+                            </td>
+                            <td>
+                                N/A
+                            </td>
+                            <td>
+                                N/A
+                            </td>
+                            <td>
+                                Dell OpenManage Inventory Agent (for Dell Business Client Systems) (1652)
+                            </td>
+                            <td>
+                                smt1.2
+                            </td>
+                            <td>
+                                Mine
+                            </td>
+                            <td>
+                                Succeeded
+                            </td>
+                            <td>
+                                Succeeded
+                            </td>
+                            <td>
+                                1/21/2019
+                            </td>
+
+                            <td>
+                                <a href="/Infos/Edit?id=36104">Edit</a>
+                                <a href="/Infos/Details?id=36104">Details</a>
+                                <a href="/Infos/Delete?id=36104">Delete</a>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <img src="images/green.png" alt="example" width="13" height="13" />
+                            </td>
+                            <td>
+                                N/A
+                            </td>
+                            <td>
+                                N/A
+                            </td>
+                            <td>
+                                N/A
+                            </td>
+                            <td>
+                                Dell OpenManage Inventory Agent (for Dell Business Client Systems) (1652)
+                            </td>
+                            <td>
+                                smt1.2
+                            </td>
+                            <td>
+                                Mine
+                            </td>
+                            <td>
+                                Succeeded
+                            </td>
+                            <td>
+                                Succeeded
+                            </td>
+                            <td>
+                                1/21/2019
+                            </td>
+
+                            <td>
+                                <a href="/Infos/Edit?id=36116">Edit</a>
+                                <a href="/Infos/Details?id=36116">Details</a>
+                                <a href="/Infos/Delete?id=36116">Delete</a>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <img src="images/green.png" alt="example" width="13" height="13" />
+                            </td>
+                            <td>
+                                N/A
+                            </td>
+                            <td>
+                                N/A
+                            </td>
+                            <td>
+                                N/A
+                            </td>
+                            <td>
+                                Microsoft Silverlight (KB4023307)
+                            </td>
+                            <td>
+                                smt1.2
+                            </td>
+                            <td>
+                                Mine
+                            </td>
+                            <td>
+                                Succeeded
+                            </td>
+                            <td>
+                                Succeeded
+                            </td>
+                            <td>
+                                1/21/2019
+                            </td>
+
+                            <td>
+                                <a href="/Infos/Edit?id=36080">Edit</a>
+                                <a href="/Infos/Details?id=36080">Details</a>
+                                <a href="/Infos/Delete?id=36080">Delete</a>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <img src="images/green.png" alt="example" width="13" height="13" />
+                            </td>
+                            <td>
+                                N/A
+                            </td>
+                            <td>
+                                N/A
+                            </td>
+                            <td>
+                                N/A
+                            </td>
+                            <td>
+                                Microsoft Silverlight (KB4023307)
+                            </td>
+                            <td>
+                                smt1.2
+                            </td>
+                            <td>
+                                Mine
+                            </td>
+                            <td>
+                                Succeeded
+                            </td>
+                            <td>
+                                Succeeded
+                            </td>
+                            <td>
+                                1/21/2019
+                            </td>
+
+                            <td>
+                                <a href="/Infos/Edit?id=36093">Edit</a>
+                                <a href="/Infos/Details?id=36093">Details</a>
+                                <a href="/Infos/Delete?id=36093">Delete</a>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <img src="images/green.png" alt="example" width="13" height="13" />
+                            </td>
+                            <td>
+                                N/A
+                            </td>
+                            <td>
+                                N/A
+                            </td>
+                            <td>
+                                N/A
+                            </td>
+                            <td>
+                                Microsoft Silverlight (KB4023307)
+                            </td>
+                            <td>
+                                smt1.2
+                            </td>
+                            <td>
+                                Mine
+                            </td>
+                            <td>
+                                Succeeded
+                            </td>
+                            <td>
+                                Succeeded
+                            </td>
+                            <td>
+                                1/21/2019
+                            </td>
+
+                            <td>
+                                <a href="/Infos/Edit?id=36105">Edit</a>
+                                <a href="/Infos/Details?id=36105">Details</a>
+                                <a href="/Infos/Delete?id=36105">Delete</a>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <img src="images/green.png" alt="example" width="13" height="13" />
+                            </td>
+                            <td>
+                                N/A
+                            </td>
+                            <td>
+                                N/A
+                            </td>
+                            <td>
+                                N/A
+                            </td>
+                            <td>
+                                Microsoft Silverlight (KB4023307)
+                            </td>
+                            <td>
+                                smt1.2
+                            </td>
+                            <td>
+                                Mine
+                            </td>
+                            <td>
+                                Succeeded
+                            </td>
+                            <td>
+                                Succeeded
+                            </td>
+                            <td>
+                                1/21/2019
+                            </td>
+
+                            <td>
+                                <a href="/Infos/Edit?id=36117">Edit</a>
+                                <a href="/Infos/Details?id=36117">Details</a>
+                                <a href="/Infos/Delete?id=36117">Delete</a>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <img src="images/grey.png" alt="example" width="13" height="13" />
+                            </td>
+                            <td>
+                                4486458
+                            </td>
+                            <td>
+                                Critical
+                            </td>
+                            <td>
+                                Security Updates
+                            </td>
+                            <td>
+                                2019-01 Servicing Stack Update for Windows 10 Version 1703 for x64-based Systems (KB4486458)
+                            </td>
+                            <td>
+                                smt1.2
+                            </td>
+                            <td>
+                                Mine
+                            </td>
+                            <td>
+                                Failed
+                            </td>
+                            <td>
+                                Failed
+                            </td>
+                            <td>
+                                1/21/2019
+                            </td>
+
+                            <td>
+                                <a href="/Infos/Edit?id=36081">Edit</a>
+                                <a href="/Infos/Details?id=36081">Details</a>
+                                <a href="/Infos/Delete?id=36081">Delete</a>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <img src="images/grey.png" alt="example" width="13" height="13" />
+                            </td>
+                            <td>
+                                4480973
+                            </td>
+                            <td>
+                                Critical
+                            </td>
+                            <td>
+                                Security Updates
+                            </td>
+                            <td>
+                                2019-01 Cumulative Update for Windows 10 Version 1703 for x64-based Systems (KB4480973)
+                            </td>
+                            <td>
+                                smt1.2
+                            </td>
+                            <td>
+                                Mine
+                            </td>
+                            <td>
+                                Failed
+                            </td>
+                            <td>
+                                Failed
+                            </td>
+                            <td>
+                                1/21/2019
+                            </td>
+
+                            <td>
+                                <a href="/Infos/Edit?id=36082">Edit</a>
+                                <a href="/Infos/Details?id=36082">Details</a>
+                                <a href="/Infos/Delete?id=36082">Delete</a>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <img src="images/grey.png" alt="example" width="13" height="13" />
+                            </td>
+                            <td>
+                                4486458
+                            </td>
+                            <td>
+                                Critical
+                            </td>
+                            <td>
+                                Security Updates
+                            </td>
+                            <td>
+                                2019-01 Servicing Stack Update for Windows 10 Version 1703 for x64-based Systems (KB4486458)
+                            </td>
+                            <td>
+                                smt1.2
+                            </td>
+                            <td>
+                                Mine
+                            </td>
+                            <td>
+                                Failed
+                            </td>
+                            <td>
+                                Failed
+                            </td>
+                            <td>
+                                1/21/2019
+                            </td>
+
+                            <td>
+                                <a href="/Infos/Edit?id=36094">Edit</a>
+                                <a href="/Infos/Details?id=36094">Details</a>
+                                <a href="/Infos/Delete?id=36094">Delete</a>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <img src="images/grey.png" alt="example" width="13" height="13" />
+                            </td>
+                            <td>
+                                4480973
+                            </td>
+                            <td>
+                                Critical
+                            </td>
+                            <td>
+                                Security Updates
+                            </td>
+                            <td>
+                                2019-01 Cumulative Update for Windows 10 Version 1703 for x64-based Systems (KB4480973)
+                            </td>
+                            <td>
+                                smt1.2
+                            </td>
+                            <td>
+                                Mine
+                            </td>
+                            <td>
+                                Failed
+                            </td>
+                            <td>
+                                Failed
+                            </td>
+                            <td>
+                                1/21/2019
+                            </td>
+
+                            <td>
+                                <a href="/Infos/Edit?id=36095">Edit</a>
+                                <a href="/Infos/Details?id=36095">Details</a>
+                                <a href="/Infos/Delete?id=36095">Delete</a>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <img src="images/grey.png" alt="example" width="13" height="13" />
+                            </td>
+                            <td>
+                                4486458
+                            </td>
+                            <td>
+                                Critical
+                            </td>
+                            <td>
+                                Security Updates
+                            </td>
+                            <td>
+                                2019-01 Servicing Stack Update for Windows 10 Version 1703 for x64-based Systems (KB4486458)
+                            </td>
+                            <td>
+                                smt1.2
+                            </td>
+                            <td>
+                                Mine
+                            </td>
+                            <td>
+                                Failed
+                            </td>
+                            <td>
+                                Failed
+                            </td>
+                            <td>
+                                1/21/2019
+                            </td>
+
+                            <td>
+                                <a href="/Infos/Edit?id=36106">Edit</a>
+                                <a href="/Infos/Details?id=36106">Details</a>
+                                <a href="/Infos/Delete?id=36106">Delete</a>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <img src="images/grey.png" alt="example" width="13" height="13" />
+                            </td>
+                            <td>
+                                4480973
+                            </td>
+                            <td>
+                                Critical
+                            </td>
+                            <td>
+                                Security Updates
+                            </td>
+                            <td>
+                                2019-01 Cumulative Update for Windows 10 Version 1703 for x64-based Systems (KB4480973)
+                            </td>
+                            <td>
+                                smt1.2
+                            </td>
+                            <td>
+                                Mine
+                            </td>
+                            <td>
+                                Failed
+                            </td>
+                            <td>
+                                Failed
+                            </td>
+                            <td>
+                                1/21/2019
+                            </td>
+
+                            <td>
+                                <a href="/Infos/Edit?id=36107">Edit</a>
+                                <a href="/Infos/Details?id=36107">Details</a>
+                                <a href="/Infos/Delete?id=36107">Delete</a>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <img src="images/grey.png" alt="example" width="13" height="13" />
+                            </td>
+                            <td>
+                                4486458
+                            </td>
+                            <td>
+                                Critical
+                            </td>
+                            <td>
+                                Security Updates
+                            </td>
+                            <td>
+                                2019-01 Servicing Stack Update for Windows 10 Version 1703 for x64-based Systems (KB4486458)
+                            </td>
+                            <td>
+                                smt1.2
+                            </td>
+                            <td>
+                                Mine
+                            </td>
+                            <td>
+                                Failed
+                            </td>
+                            <td>
+                                Failed
+                            </td>
+                            <td>
+                                1/21/2019
+                            </td>
+
+                            <td>
+                                <a href="/Infos/Edit?id=36118">Edit</a>
+                                <a href="/Infos/Details?id=36118">Details</a>
+                                <a href="/Infos/Delete?id=36118">Delete</a>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <img src="images/grey.png" alt="example" width="13" height="13" />
+                            </td>
+                            <td>
+                                4480973
+                            </td>
+                            <td>
+                                Critical
+                            </td>
+                            <td>
+                                Security Updates
+                            </td>
+                            <td>
+                                2019-01 Cumulative Update for Windows 10 Version 1703 for x64-based Systems (KB4480973)
+                            </td>
+                            <td>
+                                smt1.2
+                            </td>
+                            <td>
+                                Mine
+                            </td>
+                            <td>
+                                Failed
+                            </td>
+                            <td>
+                                Failed
+                            </td>
+                            <td>
+                                1/21/2019
+                            </td>
+
+                            <td>
+                                <a href="/Infos/Edit?id=36119">Edit</a>
+                                <a href="/Infos/Details?id=36119">Details</a>
+                                <a href="/Infos/Delete?id=36119">Delete</a>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <img src="images/grey.png" alt="example" width="13" height="13" />
+                            </td>
+                            <td>
+                                4091663
+                            </td>
+                            <td>
+                                Unspecified
+                            </td>
+                            <td>
+                                Updates
+                            </td>
+                            <td>
+                                2018-09 Update for Windows 10 Version 1703 for x64-based Systems (KB4091663)
+                            </td>
+                            <td>
+                                smt1.2
+                            </td>
+                            <td>
+                                Mine
+                            </td>
+                            <td>
+                                Failed
+                            </td>
+                            <td>
+                                Failed
+                            </td>
+                            <td>
+                                1/21/2019
+                            </td>
+
+                            <td>
+                                <a href="/Infos/Edit?id=36083">Edit</a>
+                                <a href="/Infos/Details?id=36083">Details</a>
+                                <a href="/Infos/Delete?id=36083">Delete</a>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <img src="images/grey.png" alt="example" width="13" height="13" />
+                            </td>
+                            <td>
+                                4091663
+                            </td>
+                            <td>
+                                Unspecified
+                            </td>
+                            <td>
+                                Updates
+                            </td>
+                            <td>
+                                2018-09 Update for Windows 10 Version 1703 for x64-based Systems (KB4091663)
+                            </td>
+                            <td>
+                                smt1.2
+                            </td>
+                            <td>
+                                Mine
+                            </td>
+                            <td>
+                                Failed
+                            </td>
+                            <td>
+                                Failed
+                            </td>
+                            <td>
+                                1/21/2019
+                            </td>
+
+                            <td>
+                                <a href="/Infos/Edit?id=36096">Edit</a>
+                                <a href="/Infos/Details?id=36096">Details</a>
+                                <a href="/Infos/Delete?id=36096">Delete</a>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <img src="images/grey.png" alt="example" width="13" height="13" />
+                            </td>
+                            <td>
+                                4091663
+                            </td>
+                            <td>
+                                Unspecified
+                            </td>
+                            <td>
+                                Updates
+                            </td>
+                            <td>
+                                2018-09 Update for Windows 10 Version 1703 for x64-based Systems (KB4091663)
+                            </td>
+                            <td>
+                                smt1.2
+                            </td>
+                            <td>
+                                Mine
+                            </td>
+                            <td>
+                                Failed
+                            </td>
+                            <td>
+                                Failed
+                            </td>
+                            <td>
+                                1/21/2019
+                            </td>
+
+                            <td>
+                                <a href="/Infos/Edit?id=36108">Edit</a>
+                                <a href="/Infos/Details?id=36108">Details</a>
+                                <a href="/Infos/Delete?id=36108">Delete</a>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <img src="images/grey.png" alt="example" width="13" height="13" />
+                            </td>
+                            <td>
+                                4091663
+                            </td>
+                            <td>
+                                Unspecified
+                            </td>
+                            <td>
+                                Updates
+                            </td>
+                            <td>
+                                2018-09 Update for Windows 10 Version 1703 for x64-based Systems (KB4091663)
+                            </td>
+                            <td>
+                                smt1.2
+                            </td>
+                            <td>
+                                Mine
+                            </td>
+                            <td>
+                                Failed
+                            </td>
+                            <td>
+                                Failed
+                            </td>
+                            <td>
+                                1/21/2019
+                            </td>
+
+                            <td>
+                                <a href="/Infos/Edit?id=36120">Edit</a>
+                                <a href="/Infos/Details?id=36120">Details</a>
+                                <a href="/Infos/Delete?id=36120">Delete</a>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <img src="images/grey.png" alt="example" width="13" height="13" />
+                            </td>
+                            <td>
+                                4486458
+                            </td>
+                            <td>
+                                Critical
+                            </td>
+                            <td>
+                                Security Updates
+                            </td>
+                            <td>
+                                2019-01 Servicing Stack Update for Windows 10 Version 1703 for x64-based Systems (KB4486458)
+                            </td>
+                            <td>
+                                smt1.2
+                            </td>
+                            <td>
+                                
+                            </td>
+                            <td>
+                                Succeeded
+                            </td>
+                            <td>
+                                Succeeded
+                            </td>
+                            <td>
+                                1/23/2019
+                            </td>
+
+                            <td>
+                                <a href="/Infos/Edit?id=36084">Edit</a>
+                                <a href="/Infos/Details?id=36084">Details</a>
+                                <a href="/Infos/Delete?id=36084">Delete</a>
+                            </td>
+                        </tr>
+                </tbody>
+            </table>
+        </section>
+    </div>
+
+</div>
+
+        <hr />
+        <footer>
+            <p>&copy; 2019 - WuApp</p>
+        </footer>
+    </div>
+
+    
+        <script src="/lib/jquery/dist/jquery.js"></script>
+        <script src="/lib/bootstrap/dist/js/bootstrap.js"></script>
+        <script src="/js/site.js?v=dLGP40S79Xnx6GqUthRF6NWvjvhQ1nOvdVSwaNcgG18"></script>
+    
+    
+
+    
+</body>
+</html>
+

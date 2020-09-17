@@ -1,0 +1,69 @@
+﻿@page
+@model UpdateHistory.Pages.Servers.CreateModel
+
+@{
+    ViewData["Title"] = "Create";
+}
+
+<br>
+<br>
+<br>
+<h2>Create</h2>
+
+<h4>Server</h4>
+<hr />
+<div class="row">
+    <div class="col-md-4">
+        <form method="post">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+            <div class="form-group">
+                <label asp-for="Server.ServerName" class="control-label"></label>
+                <input id="inputName" asp-for="Server.ServerName" class="form-control" required/>
+                <span asp-validation-for="Server.ServerName" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Server.Location" class="control-label"></label>
+                <input id="inputLocation" asp-for="Server.Location" class="form-control" required/>
+                <span asp-validation-for="Server.Location" class="text-danger"></span>
+                <code>@Model.NoAccessMsg</code>
+            </div>
+            <div class="form-group">
+                <label asp-for="Server.ICW" class="control-label"></label>
+                <input id="inputICW" asp-for="Server.ICW" class="form-control" required/>
+                <span asp-validation-for="Server.ICW" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Server.WindowsVersion" class="control-label"></label>
+                <input id="inputWinVer" asp-for="Server.WindowsVersion" class="form-control" />
+                <span asp-validation-for="Server.WindowsVersion" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Server.RealtimeVersion" class="control-label"></label>
+                <input id="inputRealVer" asp-for="Server.RealtimeVersion" class="form-control" />
+                <span asp-validation-for="Server.RealtimeVersion" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <input type="submit" id="btnCreate" value="Create" class="btn btn-default" />
+            </div>
+            <div>
+                <a id="linkServerCreateBack" asp-page="Index">Back to List</a>
+            </div>
+            <div class="form-group" style="visibility:hidden">
+                <label asp-for="Server.Index" class="control-label"></label>
+                <input asp-for="Server.Index" value="@Model.count" class="form-control" readonly />
+                <span asp-validation-for="Server.Index" class="text-danger"></span>
+            </div>
+            <div class="form-group" style="visibility:hidden">
+                <label asp-for="Server.ID" class="control-label"></label>
+                <input asp-for="Server.ID" value="0" class="form-control" />
+                <span asp-validation-for="Server.ID" class="text-danger"></span>
+            </div>
+        </form>
+    </div>
+</div>
+
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

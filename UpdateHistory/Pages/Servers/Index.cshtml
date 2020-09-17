@@ -1,0 +1,524 @@
+﻿@page
+@model UpdateHistory.Pages.Servers.IndexModel
+
+@{
+    ViewData["Title"] = "Index";
+}
+
+
+<br>
+<br>
+<br>
+
+<h2>Server List</h2>
+
+
+
+<script>
+    var expanded = false;
+
+    function showCheckboxes() {
+        var checkboxes = document.getElementById("checkboxes");
+        if (!expanded) {
+            checkboxes.style.display = "block";
+            expanded = true;
+        } else {
+            checkboxes.style.display = "none";
+            expanded = false;
+        }
+    }
+
+</script>
+
+
+<style>
+    .multiselect {
+        width: 30%;
+    }
+
+    .selectBox {
+        position: relative;
+    }
+
+        .selectBox select {
+            width: 100%;
+            font-weight: bold;
+            box-sizing: border-box;
+            -webkit-box-sizing: border-box;
+            -moz-box-sizing: border-box;
+            border: 1px solid #C2C2C2;
+            box-shadow: 1px 1px 4px #EBEBEB;
+            -moz-box-shadow: 1px 1px 4px #EBEBEB;
+            -webkit-box-shadow: 1px 1px 4px #EBEBEB;
+            border-radius: 3px;
+            -webkit-border-radius: 3px;
+            -moz-border-radius: 3px;
+            padding: 7px;
+            outline: none;
+        }
+
+    .overSelect {
+        position: absolute;
+        left: 0;
+        right: 0;
+        top: 0;
+        bottom: 0;
+    }
+
+    #checkboxes {
+        display: none;
+        border: 1px #dadada solid;
+    }
+
+        #checkboxes label {
+            display: block;
+        }
+
+            #checkboxes label:hover {
+                background-color: #1e90ff;
+            }
+
+    .form-style-2 {
+        max-width: 100%;
+        padding: 20px 12px 10px 20px;
+        font: 13px Arial, Helvetica, sans-serif;
+    }
+
+    .form-style-2-heading {
+        font-weight: bold;
+        font-style: italic;
+        border-bottom: 2px solid #ddd;
+        margin-bottom: 20px;
+        font-size: 15px;
+        padding-bottom: 3px;
+    }
+
+    .form-style-2 label {
+        display: block;
+        margin: 0px 0px 15px 0px;
+    }
+
+        .form-style-2 label > span {
+            width: 100px;
+            font-weight: bold;
+            float: left;
+            padding-top: 8px;
+            padding-right: 5px;
+        }
+
+    .form-style-2 span.required {
+        color: red;
+    }
+
+    .form-style-2 .tel-number-field {
+        width: 40px;
+        text-align: center;
+    }
+
+    .form-style-2 input.input-field, .form-style-2 .select-field {
+        width: 48%;
+    }
+
+    .form-style-2 input.select-field {
+        overflow: auto;
+    }
+
+    .form-style-2 input.input-field,
+    .form-style-2 .tel-number-field,
+    .form-style-2 .textarea-field,
+    .form-style-2 .select-field {
+        box-sizing: border-box;
+        -webkit-box-sizing: border-box;
+        -moz-box-sizing: border-box;
+        border: 1px solid #C2C2C2;
+        box-shadow: 1px 1px 4px #EBEBEB;
+        -moz-box-shadow: 1px 1px 4px #EBEBEB;
+        -webkit-box-shadow: 1px 1px 4px #EBEBEB;
+        border-radius: 3px;
+        -webkit-border-radius: 3px;
+        -moz-border-radius: 3px;
+        padding: 7px;
+        outline: none;
+    }
+
+        .form-style-2 .input-field:focus,
+        .form-style-2 .tel-number-field:focus,
+        .form-style-2 .textarea-field:focus,
+        .form-style-2 .select-field:focus {
+            border: 1px solid #848484;
+        }
+
+    .form-style-2 .textarea-field {
+        height: 100px;
+        width: 55%;
+    }
+
+    .form-style-2 input[type=submit],
+    .form-style-2 input[type=reset],
+    .form-style-2 input[type=button] {
+        float: right;
+        border: none;
+        padding: 8px 15px 8px 15px;
+        background: #0069af;
+        color: #fff;
+        box-shadow: 1px 1px 4px #DADADA;
+        -moz-box-shadow: 1px 1px 4px #DADADA;
+        -webkit-box-shadow: 1px 1px 4px #DADADA;
+        border-radius: 3px;
+        -webkit-border-radius: 3px;
+        -moz-border-radius: 3px;
+    }
+
+        .form-style-2 input[type=submit]:hover,
+        .form-style-2 input[type=reset],
+        .form-style-2 input[type=button] {
+            background: #00558e;
+            color: #fff;
+        }
+
+    .formstyle input[type=button] {
+        float:left;
+        border: none;
+        padding: 8px 15px 8px 15px;
+        background: #0069af;
+        color: #fff;
+        box-shadow: 1px 1px 4px #DADADA;
+        -moz-box-shadow: 1px 1px 4px #DADADA;
+        -webkit-box-shadow: 1px 1px 4px #DADADA;
+        border-radius: 3px;
+        -webkit-border-radius: 3px;
+        -moz-border-radius: 3px;
+    }
+
+        .formstyle input[type=button] {
+            background: #00558e;
+            color: #fff;
+        }
+
+    .formstyle input[type=submit],
+    .formstyle input[type=reset],
+    .formstyle button {
+        border: none;
+        padding: 8px 15px 8px 15px;
+        background: #0069af;
+        color: #fff;
+        box-shadow: 1px 1px 4px #DADADA;
+        -moz-box-shadow: 1px 1px 4px #DADADA;
+        -webkit-box-shadow: 1px 1px 4px #DADADA;
+        border-radius: 3px;
+        -webkit-border-radius: 3px;
+        -moz-border-radius: 3px;
+        float: right;
+    }
+
+        .formstyle input[type=submit]:hover,
+        .formstyle input[type=reset]:hover,
+        .formstyle button:hover {
+            background: #00558e;
+            color: #fff;
+        }
+
+
+    .sub-entry {
+        width: 50%;
+        float: left;
+    }
+
+    .button {
+        text-align: center;
+        clear: both;
+    }
+
+    .dropdown-check-list {
+        display: inline-block;
+    }
+
+        .dropdown-check-list .anchor {
+            position: relative;
+            cursor: pointer;
+            display: inline-block;
+            padding: 5px 50px 5px 10px;
+            border: 1px solid #ccc;
+        }
+
+            .dropdown-check-list .anchor:after {
+                position: absolute;
+                content: "";
+                border-left: 2px solid black;
+                border-top: 2px solid black;
+                padding: 5px;
+                right: 10px;
+                top: 20%;
+                -moz-transform: rotate(-135deg);
+                -ms-transform: rotate(-135deg);
+                -o-transform: rotate(-135deg);
+                -webkit-transform: rotate(-135deg);
+                transform: rotate(-135deg);
+            }
+
+            .dropdown-check-list .anchor:active:after {
+                right: 8px;
+                top: 21%;
+            }
+
+        .dropdown-check-list ul.items {
+            padding: 2px;
+            display: none;
+            margin: 0;
+            border: 1px solid #ccc;
+            border-top: none;
+        }
+
+            .dropdown-check-list ul.items li {
+                list-style: none;
+            }
+
+        .dropdown-check-list.visible .anchor {
+            color: #0094ff;
+        }
+
+        .dropdown-check-list.visible .items {
+            display: block;
+        }
+
+    /* The Modal (background) */
+    .modal {
+        display: none; /* Hidden by default */
+        position: fixed; /* Stay in place */
+        z-index: 1; /* Sit on top */
+        padding-top: 100px; /* Location of the box */
+        left: 0;
+        top: 0;
+        width: 100%; /* Full width */
+        height: 100%; /* Full height */
+        overflow: auto; /* Enable scroll if needed */
+        background-color: rgb(0,0,0); /* Fallback color */
+        background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+    }
+
+    /* Modal Content */
+    .modal-content {
+        align-content: center;
+        text-align: center;
+        background-color: #fefefe;
+        margin: auto;
+        padding: 20px;
+        border: 1px solid #888;
+        width: 80%;
+    }
+
+    /* The Close Button */
+    .close {
+        color: #aaaaaa;
+        float: right;
+        font-size: 28px;
+        font-weight: bold;
+    }
+
+        .close:hover,
+        .close:focus {
+            color: #000;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+
+    tr:hover {
+        background-color: #e8e8e8;
+    }
+</style>
+
+<form class="formstyle" method="post">
+    <input type="submit" value="Create New Server" class="button" id="Create" asp-page-handler="Create"/>
+</form>
+
+<br>
+
+
+<div>
+    <div class="form-style-2-heading">Select your Servers</div>
+</div>
+
+
+<form method="post" class="formstyle">
+    <b><button type="submit" value="Generate Report" class="button" id="submit"><img src="~/images/generate.png" alt="example" width="20" height="20" />&nbsp; Generate Report</button></b>
+
+    <br>
+    <br>
+    <br>
+    <table class="table" style="width:100%">
+        <thead>
+            <tr>
+                <th>
+
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.Server[0].Index)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.Server[0].ServerName)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.Server[0].Location)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.Server[0].ICW)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.Server[0].WindowsVersion)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.Server[0].RealtimeVersion)
+                </th>
+                <th>
+                    <input id="btnRefresh" asp-page-handler="Refresh" type="image" name="submit" src="~/images/refresh.png" alt="example" border="0" style="width:17px; height:17px" />
+                </th>
+            </tr>
+        </thead>
+        <tbody>
+            @for (int i = 0; i < Model.Server.Count; i++)
+            {
+                @if (Model.Server[i].NoAccess == true)
+                {
+                    <tr>
+                        <td>
+                            <input id="checkboxHidden" type="checkbox" asp-for="@Model.isItTho[i]" style="visibility:hidden" />
+                        </td>
+                        <td>
+                            @Html.DisplayFor(m => m.Server[i].Index)
+                        </td>
+                        <td>
+                            @Html.DisplayFor(m => m.Server[i].ServerName)
+                        </td>
+                        <td>
+                            @Html.DisplayFor(m => m.Server[i].Location)
+                        </td>
+                        <td>
+                            @Html.DisplayFor(m => m.Server[i].ICW)
+                        </td>
+                        <td>
+                            @Html.DisplayFor(m => m.Server[i].WindowsVersion)
+                        </td>
+                        <td>
+                            @Html.DisplayFor(m => m.Server[i].RealtimeVersion)
+                        </td>
+                        <td>
+                            <a id="linkEditServer" asp-page="./Edit" asp-route-id="@Model.Server[i].ID">Edit</a> |
+                            <a id="linkDeleteServer" asp-page="./Delete" asp-route-id="@Model.Server[i].ID">Delete</a>
+                        </td>
+
+                    </tr>
+                }
+                else
+                {
+                    <tr>
+                        <td>
+                            <input id="checkbox" type="checkbox" asp-for="@Model.isItTho[i]" />
+                        </td>
+                        <td>
+                            @Html.DisplayFor(m => m.Server[i].Index)
+                        </td>
+                        <td>
+                            @Html.DisplayFor(m => m.Server[i].ServerName)
+                        </td>
+                        <td>
+                            @Html.DisplayFor(m => m.Server[i].Location)
+                        </td>
+                        <td>
+                            @Html.DisplayFor(m => m.Server[i].ICW)
+                        </td>
+                        <td>
+                            @Html.DisplayFor(m => m.Server[i].WindowsVersion)
+                        </td>
+                        <td>
+                            @Html.DisplayFor(m => m.Server[i].RealtimeVersion)
+                        </td>
+                        <td>
+                            <a id="linkEditServer" asp-page="./Edit" asp-route-id="@Model.Server[i].ID">Edit</a> |
+                            <a id="linkDeleteServer" asp-page="./Delete" asp-route-id="@Model.Server[i].ID">Delete</a>
+                        </td>
+
+                    </tr>
+                }
+
+            }
+        </tbody>
+    </table>
+
+</form>
+
+
+<!-- The Modal -->
+<div id="myModal" class="modal">
+
+    <!-- Modal content -->
+    <div class="modal-content">
+        <span class="close">&times;</span>
+        <h2>It's loading…</h2>
+        <img src="~/images/loading_icon.gif" alt="loading_icon" width="485" height="273">
+    </div>
+
+</div>
+
+
+<div id="errorModal" class="modal">
+
+    <!-- Modal content -->
+    <div class="modal-content">
+        <span class="close">&times;</span>
+        <code>@Model.Error</code>
+    </div>
+
+</div>
+
+<script>
+    // Get the modal
+    var modal = document.getElementById('myModal');
+
+    var errmodal = document.getElementById('errorModal');
+
+    // Get the button that opens the modal
+    var btn = document.getElementById("submit");
+
+    // Get the <span> element that closes the modal
+    var span = document.getElementsByClassName("close")[0];
+
+    var noserver = false;
+
+    var error = false;
+
+
+
+
+    // When the user clicks the button, open the modal
+    btn.onclick = function () {
+        noserverselected();
+        if (noserver == false) {
+            modal.style.display = "block";
+        }
+    }
+
+    // When the user clicks on <span> (x), close the modal
+    span.onclick = function () {
+        modal.style.display = "none";
+    }
+
+    // When the user clicks anywhere outside of the modal, close it
+    window.onclick = function (event) {
+        if (event.target == modal) {
+            modal.style.display = "none";
+        }
+    }
+
+    function noserverselected() {
+        checked = $("input[type=checkbox]:checked").length;
+
+        if (!checked) {
+            alert("You must check at least one checkbox.");
+            noserver = true;
+            return false;
+        }
+
+    };
+
+</script>

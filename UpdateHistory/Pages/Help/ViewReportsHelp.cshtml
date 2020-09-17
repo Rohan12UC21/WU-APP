@@ -1,0 +1,48 @@
+﻿@page
+@model UpdateHistory.Pages.Help.ViewReportsHelpModel
+@{
+    <link rel="stylesheet" type="text/css" href="~/css/StyleSheet.css" />
+}
+<br>
+<br>
+<br>
+
+<body>
+    <div class="container-fluid body-content">
+        <div class="container container-fluid">
+            <h2>Help Page for using WuApp</h2>
+            <div class="container">
+                <div class="help-navigation col-md-2">
+                    <h5>Contents</h5>
+                    <ul>
+                        <li>
+                            <a id="linkHelpIndex" href="/Help/Index">Manual Home Page</a>
+                        </li>
+                        <li>
+                            <a id="linkHelpServer" href="/Help/ServerHelp">Server Help</a>
+                        </li>
+                        <li>
+                            <a id="linkHelpInfo" href="/Help/ViewReportsHelp">View Reports Help</a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            <br />
+            <br />
+            <div class="col-md-10">
+                <h1>
+                    <p class="a">View Reports Tab Help</p>
+                </h1>
+                <img class="img2" src="~/images/wuappimages/5.png" />
+
+                <div class="desc">
+                    <b>Layout of the View Reports Page</b>
+                </div>
+                <h3>Function</h3>
+                <p>
+                    As the name suggest, this tab enables the user to view and sort the generated report with the windows update history. The report is divided into to tabs, <b>All</b> displaying the whole report and, <b>Failed</b> dispalying the report containing entries only with Test Results marked as "Failed". The user also has the option of filtering the report based on certain paramters. Filter can be applied using the <b>Filter</b> button. Filters can be cleared using the <b>Clear</b> button. The user can also <b>Save</b> the report in a HTML format on their local machine.
+                </p>
+            </div>
+        </div>
+    </div>
+</body>

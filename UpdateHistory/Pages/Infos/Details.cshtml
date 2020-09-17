@@ -1,0 +1,124 @@
+﻿@page
+@model UpdateHistory.Pages.Infos.DetailsModel
+
+@{
+    ViewData["Title"] = "Details";
+}
+
+<br>
+<br>
+<br>
+<h2>Details</h2>
+
+<div>
+    <h4>Info</h4>
+    <hr />
+    <dl class="dl-horizontal">
+        <dt>
+            @Html.DisplayNameFor(model => model.Info.updateID)
+        </dt>
+        <dd>
+            @Html.DisplayFor(model => model.Info.updateID)
+        </dd>
+        <dt>
+            @Html.DisplayNameFor(model => model.Info.Title)
+        </dt>
+        <dd>
+            @Html.DisplayFor(model => model.Info.Title)
+        </dd>
+        <dt>
+            @Html.DisplayNameFor(model => model.Info.KBID)
+        </dt>
+        <dd>
+            @Html.DisplayFor(model => model.Info.KBID)
+        </dd>
+        <dt>
+            @Html.DisplayNameFor(model => model.Info.MSRCSeverity)
+        </dt>
+        <dd>
+            @Html.DisplayFor(model => model.Info.MSRCSeverity)
+        </dd>
+        <dt>
+            @Html.DisplayNameFor(model => model.Info.MSRCNumber)
+        </dt>
+        <dd>
+            @Html.DisplayFor(model => model.Info.MSRCNumber)
+        </dd>
+        <dt>
+            @Html.DisplayNameFor(model => model.Info.Classification)
+        </dt>
+        <dd>
+            @Html.DisplayFor(model => model.Info.Classification)
+        </dd>
+        <dt>
+            @Html.DisplayNameFor(model => model.Info.Architecture)
+        </dt>
+        <dd>
+            @Html.DisplayFor(model => model.Info.Architecture)
+        </dd>
+        <dt>
+            @Html.DisplayNameFor(model => model.Info.SupportedProducts)
+        </dt>
+        <dd>
+            @Html.DisplayFor(model => model.Info.SupportedProducts)
+        </dd>
+        <dt>
+            @Html.DisplayNameFor(model => model.Info.SupportedLanguages)
+        </dt>
+        <dd>
+            @Html.DisplayFor(model => model.Info.SupportedLanguages)
+        </dd>
+        <dt>
+            @Html.DisplayNameFor(model => model.Info.LastReleased)
+        </dt>
+        <dd>
+            @Html.DisplayFor(model => model.Info.LastReleased)
+        </dd>
+        <dt>
+            @Html.DisplayNameFor(model => model.Info.UpdateStatus)
+        </dt>
+        <dd>
+            @Html.DisplayFor(model => model.Info.UpdateStatus)
+        </dd>
+        <dt>
+            @Html.DisplayNameFor(model => model.Info.TestResults)
+        </dt>
+        <dd>
+            @Html.DisplayFor(model => model.Info.TestResults)
+        </dd>
+        <dt>
+            @Html.DisplayNameFor(model => model.Info.ICW)
+        </dt>
+        <dd>
+            @Html.DisplayFor(model => model.Info.ICW)
+        </dd>
+        <dt>
+            @Html.DisplayNameFor(model => model.Info.Server)
+        </dt>
+        <dd>
+            @Html.DisplayFor(model => model.Info.Server)
+        </dd>
+        <dt>
+            @Html.DisplayNameFor(model => model.Info.TestDate)
+        </dt>
+        <dd>
+            @Html.DisplayFor(model => model.Info.TestDate)
+        </dd>
+        <dt>
+            @Html.DisplayNameFor(model => model.Info.Active)
+        </dt>
+        <dd>
+            @Html.DisplayFor(model => model.Info.Active)
+        </dd>
+        <dt>
+            @Html.DisplayNameFor(model => model.Info.Reason)
+        </dt>
+        <dd>
+            @Html.DisplayFor(model => model.Info.Reason)
+        </dd>
+    </dl>
+</div>
+<div>
+    <a id="linkEdit" asp-page="./Edit" asp-route-id="@Model.Info.ID">Edit</a> |
+    <a id="linkInfoDetailsBack" href="@Model.InfosPage">Back to List</a>
+</div>

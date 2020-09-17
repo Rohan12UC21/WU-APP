@@ -1,0 +1,47 @@
+﻿@page
+@model UpdateHistory.Pages.Help.IndexModel
+@{
+    <link rel="stylesheet" type="text/css" href="~/css/StyleSheet.css" />
+}
+<br>
+<br>
+<br>
+
+<body>
+    <div class="container-fluid body-content">
+        <div class="container container-fluid">
+            <h2>Help Page for using WuApp</h2>
+            <div class="container">
+                <div class="help-navigation col-md-2">
+                    <h5>Contents</h5>
+                    <ul>
+                        <li>
+                            <a id="linkHelpIndex" href="/Help/Index">Manual Home Page</a>
+                        </li>
+                        <li>
+                            <a id="linkHelpServer" href="/Help/ServerHelp">Server Help</a>
+                        </li>
+                        <li>
+                            <a id="linkHelpInfo" href="/Help/ViewReportsHelp">View Reports Help</a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            <br/>
+            <br/>
+            <div class="col-md-10">
+                <img class="img2" src="~/images/wuappimages/1.png"/>
+         
+                <div class="desc"><b>Layout of the WuApp Home Page</b></div>
+       
+                <h1>
+                    <p class="a">WuApp Help Manual</p>
+                </h1>
+                <h3>Overview</h3>
+                <p>
+                    WuApp is responsible for fostering windows update history from user specified targeted machines and generating a report based off of the fostered updates. The application allows user to add, delete and edit target machines. The user can foster single or mutiple server reports from under the <b>Servers</b> tab. Generated reports can be viewed under the <b>View Reports</b> tab. The user also has the option for filtering and saving the report.
+                </p>
+            </div>
+        </div>
+    </div>
+</body>
